@@ -1,0 +1,6 @@
+# CAD exports: no line-ending conversion and no text diffs.
+*.step binary
+*.STEP binary
+*.stp  binary
+*.stl  binary
+*.3mf  binary
