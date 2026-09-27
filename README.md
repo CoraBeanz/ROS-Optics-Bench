@@ -21,8 +21,8 @@ A small, mostly 3D-printed optical bench that couples a red laser into an optica
 
 | Part | Role |
 | --- | --- |
-| ESP32 | Real-time side: steppers, soft limits, photodiode sampling |
-| 4x TMC2209 on one UART bus | Stepper drivers |
+| Adafruit ESP32 Feather V2 | Real-time side: steppers, soft limits, photodiode sampling |
+| 4x Adafruit TMC2209 breakout on one UART bus | Stepper drivers |
 | ADS1115 (16-bit ADC) + BPW34 photodiodes with TIA | Reference and output power |
 | Jetson (ROS 2) | Camera, optimizer, experiment control |
 | Arducam OV9281 (global shutter, UVC) | Beam profiler for phase 1 |
@@ -61,18 +61,7 @@ Code in `src/` is compiled with the sketch automatically. Record any library add
 | TMCStepper (teemuatlut) | 0.7.3 | TMC2209 register setup over UART |
 | AccelStepper (Mike McCauley) | 1.64 | Ramped STEP/DIR motion |
 
-Every pin is set in `firmware/optics_bench/config.h`. M1X and M1Y use the Feather ESP32 V2 carrier pins from the earlier featherv2 sketch; M2X, M2Y and the laser are placeholders to check against the wiring.
-
-| Signal | GPIO | Note |
-| --- | --- | --- |
-| TMC2209 UART RX / TX | 7 / 8 | TX through 1 kOhm to the shared PDN_UART line |
-| M1X STEP / DIR / EN | 4 / 13 / 12 | UART address 0 (MS1=GND, MS2=GND) |
-| M1Y STEP / DIR / EN | 27 / 33 / 15 | UART address 1 (MS1=3V3, MS2=GND) |
-| M2X STEP / DIR / EN | 32 / 14 / 25 | placeholder, address 2 (MS1=GND, MS2=3V3) |
-| M2Y STEP / DIR / EN | 26 / 5 / 19 | placeholder, address 3 (MS1=3V3, MS2=3V3) |
-| Laser enable | 21 | placeholder, active high, through a transistor or the module's TTL input |
-
-GPIO 22 and 20 (SDA/SCL) are left free for the ADS1115.
+Every pin is set in `firmware/optics_bench/config.h`. The wiring diagram and full pin table for the Feather ESP32 V2, the four Adafruit TMC2209 breakouts and the laser are in [electronics/wiring.md](electronics/wiring.md).
 
 ## Bench test panel
 

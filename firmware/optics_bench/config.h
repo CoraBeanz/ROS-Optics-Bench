@@ -3,9 +3,11 @@
 // Bench-wide settings: pin map, bus addresses, motor defaults and limits.
 // Every pin the firmware touches is set here.
 //
-// Pins marked "from featherv2" are the ones the KineoLabs Feather V2 carrier
-// used for its two TMC2209 slots. Pins marked "PLACEHOLDER" were picked from
-// the Feather V2's free pads and must be checked against the real wiring.
+// Board: Adafruit ESP32 Feather V2 (product 5400). Drivers: 4x Adafruit
+// TMC2209 breakout (product 6121). Laser: Quarton VLM-635-32 LPT.
+// Wiring diagram and pin table: electronics/wiring.md.
+// M1X/M1Y use the pins of the two TMC2209 slots in the earlier featherv2
+// sketch; the rest were picked from the Feather V2's free pads.
 
 #include <Arduino.h>
 
@@ -15,16 +17,18 @@
 #define SERIAL_BAUD 115200
 
 // ── TMC2209 shared single-wire UART ─────────────────────────────────────────
-// All four drivers hang on one bus. ESP32 RX goes straight to the shared
-// PDN_UART line, ESP32 TX goes to it through a 1 kOhm resistor.
-// Each driver gets its own address (0-3) from its MS1/MS2 straps:
+// All four breakouts' UART pins join on one bus. ESP32 RX goes straight to
+// it, ESP32 TX goes to it through a 1 kOhm resistor (the Adafruit breakout
+// has no resistor of its own on UART). Each driver gets its own address
+// (0-3) from its MS1/MS2 pins, which have no pull resistors on the breakout,
+// so tie each one to 3V3 or GND:
 //   addr 0: MS1=GND  MS2=GND     addr 1: MS1=3V3  MS2=GND
 //   addr 2: MS1=GND  MS2=3V3     addr 3: MS1=3V3  MS2=3V3
 #define TMC_SERIAL   Serial1
-#define TMC_RX_PIN   7        // from featherv2 (RX pad)
-#define TMC_TX_PIN   8        // from featherv2 (TX pad)
+#define TMC_RX_PIN   7        // Feather V2 RX pad
+#define TMC_TX_PIN   8        // Feather V2 TX pad
 #define TMC_BAUD     115200
-#define R_SENSE      0.11f    // sense resistor on most TMC2209 modules (BTT, FYSETC)
+#define R_SENSE      0.05f    // Adafruit 6121 sense resistors (R1/R2). BTT/FYSETC modules use 0.11
 #define TMC_EXPECTED_VER 0x21 // IOIN version byte of a TMC2209
 
 // A driver that doesn't answer on the UART runs on its pin-strapped defaults
@@ -38,8 +42,10 @@
 // Two motors per mirror: X and Y adjusters on M1 and M2. Which adjuster is
 // "X" is up to the wiring; rename here if it reads better another way.
 // invert: flips the positive direction in software instead of rewiring.
-// EN is active low on the TMC2209. GPIO 12 is an ESP32 boot strapping pin:
-// it must not be pulled high at reset (no external pull-up on EN).
+// EN is active low. The breakout pulls EN low (20k), so a driver is enabled
+// until the firmware drives EN high at boot. That pull-down also keeps
+// GPIO 12, an ESP32 boot strapping pin, low at reset as it must be.
+// GPIO 13 also drives the Feather's red LED, which flickers with M1X DIR.
 struct AxisPins {
   const char *name;
   uint8_t step, dir, en;
@@ -50,17 +56,17 @@ struct AxisPins {
 #define NUM_AXES 4
 constexpr AxisPins AXIS_PINS[NUM_AXES] = {
   //  name   STEP DIR EN  addr invert
-  { "M1X",   4,  13, 12,  0,  false },   // from featherv2 slot M1
-  { "M1Y",  27,  33, 15,  1,  false },   // from featherv2 slot M2
-  { "M2X",  32,  14, 25,  2,  false },   // PLACEHOLDER (old TFT CS / DC / RST pads)
-  { "M2Y",  26,   5, 19,  3,  false },   // PLACEHOLDER (old TFT backlight / SCK / MOSI pads)
+  { "M1X",   4,  13, 12,  0,  false },   // pads A5, 13, 12
+  { "M1Y",  27,  33, 15,  1,  false },   // pads 27, 33, 15
+  { "M2X",  32,  14, 25,  2,  false },   // pads 32, 14, A1
+  { "M2Y",  26,   5, 19,  3,  false },   // pads A0, SCK, MO
 };
 
 // ── Laser ───────────────────────────────────────────────────────────────────
-// Drives the laser module's TTL/enable input or a MOSFET/transistor that
-// switches its supply. A GPIO can't power the module directly.
-#define LASER_PIN         21      // PLACEHOLDER (MI pad)
-#define LASER_ACTIVE_HIGH true    // false if the enable input is active low
+// Quarton VLM-635-32 LPT: 3-6 V supply (< 40 mA, from the Feather's 3V3),
+// TTL input high = on, 1-20 mA, so a GPIO drives it directly.
+#define LASER_PIN         21      // MI pad
+#define LASER_ACTIVE_HIGH true
 
 // ── Stepping ────────────────────────────────────────────────────────────────
 // NEMA 8, 1.8 deg. The driver interpolates every setting to 256x internally

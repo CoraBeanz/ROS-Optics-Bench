@@ -16,9 +16,8 @@ void setup() {
   // drains at 115200 baud.
   Serial.setTxBufferSize(1024);
   Serial.begin(SERIAL_BAUD);
-  delay(100);
   Serial.println("BOOT optics_bench " FW_VERSION);
-  motion::begin();
+  motion::begin();                 // first thing it does is drive every EN high
   protocol::begin();
   Serial.println("READY");
 }
