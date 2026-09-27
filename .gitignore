@@ -1,0 +1,15 @@
+# OS and editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# ROS 2 build output
+host/ros2_ws/build/
+host/ros2_ws/install/
+host/ros2_ws/log/
