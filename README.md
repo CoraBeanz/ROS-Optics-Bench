@@ -50,11 +50,55 @@ tools/                 Bench scripts: calibration, hysteresis tests, plotting
 ## Building the firmware
 
 1. In the Arduino IDE, install the ESP32 boards package (Boards Manager, "esp32" by Espressif).
-2. Open `firmware/optics_bench/optics_bench.ino`.
-3. Select your ESP32 board and port, then Upload. Serial Monitor runs at 115200 baud.
+2. Install the libraries below with the Library Manager.
+3. Open `firmware/optics_bench/optics_bench.ino`.
+4. Select your ESP32 board and port, then Upload. Serial Monitor runs at 115200 baud with newline line endings.
 
 Code in `src/` is compiled with the sketch automatically. Record any library added through the Library Manager here so the build can be reproduced.
 
+| Library | Version | Used for |
+| --- | --- | --- |
+| TMCStepper (teemuatlut) | 0.7.3 | TMC2209 register setup over UART |
+| AccelStepper (Mike McCauley) | 1.64 | Ramped STEP/DIR motion |
+
+Every pin is set in `firmware/optics_bench/config.h`. M1X and M1Y use the Feather ESP32 V2 carrier pins from the earlier featherv2 sketch; M2X, M2Y and the laser are placeholders to check against the wiring.
+
+| Signal | GPIO | Note |
+| --- | --- | --- |
+| TMC2209 UART RX / TX | 7 / 8 | TX through 1 kOhm to the shared PDN_UART line |
+| M1X STEP / DIR / EN | 4 / 13 / 12 | UART address 0 (MS1=GND, MS2=GND) |
+| M1Y STEP / DIR / EN | 27 / 33 / 15 | UART address 1 (MS1=3V3, MS2=GND) |
+| M2X STEP / DIR / EN | 32 / 14 / 25 | placeholder, address 2 (MS1=GND, MS2=3V3) |
+| M2Y STEP / DIR / EN | 26 / 5 / 19 | placeholder, address 3 (MS1=3V3, MS2=3V3) |
+| Laser enable | 21 | placeholder, active high, through a transistor or the module's TTL input |
+
+GPIO 22 and 20 (SDA/SCL) are left free for the ADS1115.
+
+## Bench test panel
+
+`tools/bench_gui.py` is a small desktop app for the first bench tests: laser on/off, and jog, nudge and go-to for the four mirror motors.
+
+```
+pip install -r tools/requirements.txt
+python tools/bench_gui.py          # pick the ESP32's COM port, Connect
+python tools/bench_gui.py --sim    # try it without hardware
+```
+
+- **Positions** are in microsteps, 3200 per adjuster turn. One turn of a 100 TPI adjuster is 254 um, so a full step is about 1.3 um of screw travel.
+- **Zero and soft limits.** "Set 0" calls the current knob position zero. The soft limits (default -3 to +3 turns, adjustable up to +-8) stay relative to zero, because the hex bit only has about 4 turns of engagement one way. Positions and limits are saved to flash and survive a power cycle. If power drops mid-move, the panel warns that positions may be off.
+- **Hold-to-jog** (the double arrows) keeps a motor running while the button is held. The firmware stops it by itself if the panel stops refreshing the jog, so a crashed GUI can't run a motor to its limit.
+- **Keys:** arrows move M1 (Left/Right = M1X, Down/Up = M1Y), A/D and S/W move M2X and M2Y by the selected step, L toggles the laser, Esc stops everything.
+- **Diag** shows the TMC2209 status (current, StealthChop, overtemperature, short and open-load flags). A driver that doesn't answer on the UART shows a red dot and refuses to move.
+
+The serial protocol is plain text and documented in `firmware/optics_bench/src/comms/protocol.h`, so the Serial Monitor or the Jetson can use the same commands.
+
+### First power-up checklist
+
+1. Flash the firmware and connect. A driver whose 12 V supply is off doesn't answer on the UART, so it shows a red dot and a "driver offline" warning.
+2. With the 12 V supply on, send `REPROBE ALL` (or just move the axis, which retries). The dots should go green, and the connection bar should say `slots=ok`.
+3. Take the hex bits out of the adjusters and nudge each motor by 1/4 turn to check which way positive turns. Flip it with `invert` in `config.h` if needed.
+4. Refit the bits, "Set 0" on each axis, and start aligning.
+
 ## Status
 
-Early setup. The mechanical design is in progress in Onshape; firmware and host code have not been started.
+Bench testing. The firmware drives the laser and the four mirror motors, and `tools/bench_gui.py` is the test panel. Photodiode sensing and the ROS 2 host side have not been started.
