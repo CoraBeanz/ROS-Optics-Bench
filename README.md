@@ -30,33 +30,30 @@ A small, mostly 3D-printed optical bench that couples a red laser into an optica
 ## Repository layout
 
 ```
-cad/                 Mechanical CAD (Onshape STEP exports)
-  assemblies/        Full assemblies, e.g. the motor-mirror assembly
-  parts/             Individual printed or machined parts
-  print/             STL / 3MF files ready to slice
-  vendor/            Purchased-part models (motors, mounts, optics)
-docs/                Notes, drawings, bench layout, test results
-electronics/         Wiring diagrams, schematics, pinouts
-firmware/esp32/      PlatformIO project for the ESP32
-  src/               main.cpp: startup and the main loop
-  include/           Shared headers (pin map, bench config)
-  lib/motion/        TMC2209 drivers, stepping, homing, soft limits
-  lib/sensing/       ADS1115 reads, photodiode ratio
-  lib/comms/         Serial protocol to the host
-  test/              Unit tests (pio test)
-host/ros2_ws/src/    ROS 2 packages for the Jetson
-tools/               Bench scripts: calibration, hysteresis tests, plotting
+cad/                   Mechanical CAD (Onshape STEP exports)
+  assemblies/          Full assemblies, e.g. the motor-mirror assembly
+  parts/               Individual printed or machined parts
+  print/               STL / 3MF files ready to slice
+  vendor/              Purchased-part models (motors, mounts, optics)
+docs/                  Notes, drawings, bench layout, test results
+electronics/           Wiring diagrams, schematics, pinouts
+firmware/optics_bench/ Arduino IDE sketch for the ESP32
+  optics_bench.ino     setup() and loop()
+  config.h             Pin map, bus addresses, motor limits
+  src/motion/          TMC2209 drivers, stepping, homing, soft limits
+  src/sensing/         ADS1115 reads, photodiode ratio
+  src/comms/           Serial protocol to the host
+host/ros2_ws/src/      ROS 2 packages for the Jetson
+tools/                 Bench scripts: calibration, hysteresis tests, plotting
 ```
 
 ## Building the firmware
 
-Install [PlatformIO](https://platformio.org/), then from `firmware/esp32/`:
+1. In the Arduino IDE, install the ESP32 boards package (Boards Manager, "esp32" by Espressif).
+2. Open `firmware/optics_bench/optics_bench.ino`.
+3. Select your ESP32 board and port, then Upload. Serial Monitor runs at 115200 baud.
 
-```
-pio run                  # build
-pio run -t upload        # flash
-pio device monitor       # serial console
-```
+Code in `src/` is compiled with the sketch automatically. Record any library added through the Library Manager here so the build can be reproduced.
 
 ## Status
 
