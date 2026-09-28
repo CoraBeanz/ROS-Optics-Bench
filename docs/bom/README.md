@@ -19,10 +19,15 @@ whether it is already on hand, **TBD** = part not chosen yet.
 | E5 | Driver carrier | Perfboard + female headers | 1 | 8 | Amazon | Check | 1 |  |
 | E6 | Motor supply | 12 V 2 A DC | 1 | 8 | Amazon | Check | 1 | Skip if using a bench supply. Drivers only answer UART with 12 V on |
 | E7 | Laser | Quarton VLM-635-32 LPT 635 nm module (Amazon B07QCTMMVT) | 1 |  | Amazon | Have | 1 | TTL high = on from GPIO 21. Measured beam about 7 x 3 mm |
-| E8 | ADC | ADS1115 16-bit I2C breakout | 1 | 6 | Amazon | Check | 2 | SDA 22 / SCL 20. Adafruit ADS1X15 library |
-| E9 | Photodiode | BPW34 Si PIN (5-pack) | 1 | 7 | Amazon / DigiKey | Check | 2 | Reference PD on beamsplitter port and fiber output PD |
-| E10 | TIA op-amp + passives | Rail-to-rail op-amp with feedback R and C per photodiode | 2 |  | DigiKey | TBD | 2 | Values follow electronics/wiring.md once the photodiode wiring lands. Keep PD leads under 10 mm |
+| E8 | ADC | Adafruit ADS1115 16-bit I2C breakout (product 1085) | 1 | 15 | Adafruit | Check | 2 | Address 0x48 (ADDR to GND). Plugs into the Feather STEMMA QT port. Adafruit ADS1X15 library |
+| E9 | Photodiode | BPW34 Si PIN (5-pack) | 1 | 7 | Amazon / DigiKey | Check | 2 | One on each photodiode board: reference (ADS1115 A0) and fiber output (A1) |
+| E10 | TIA op-amp | MCP6002 dual op-amp, DIP-8 | 2 | 0.5 | DigiKey | Check | 2 | One per photodiode board; half B unused, wired as a grounded follower |
 | E11 | Hookup | Wire, headers, Dupont/JST connectors | 1 |  | Stock | Have | 1 |  |
+| E12 | TIA feedback resistor | 47 kOhm 1% | 2 |  | Stock / DigiKey | Check | 2 | Rf on each board. Keep a few 10 kOhm on hand in case a channel saturates near 3.3 V (then update PD_*_TIA_OHMS in config.h) |
+| E13 | TIA feedback capacitor | 1 nF C0G | 2 |  | Stock / DigiKey | Check | 2 | Cf across Rf; 47 us, about 3.4 kHz bandwidth |
+| E14 | Op-amp decoupling capacitor | 100 nF ceramic | 2 |  | Stock / DigiKey | Check | 2 | Between MCP6002 pins 8 and 4, at the chip |
+| E15 | Photodiode board | Small perfboard + short twisted pair to the ADS1115 | 2 |  | Stock / DigiKey | Check | 2 | Mounted right behind each diode; leads under 10 mm |
+| E16 | STEMMA QT cable | JST SH 4-pin, 100 mm | 1 | 1 | Adafruit | Check | 2 | ADS1115 to the Feather STEMMA QT port |
 
 ## Motion
 
