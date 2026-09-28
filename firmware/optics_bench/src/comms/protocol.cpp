@@ -4,6 +4,7 @@
 #include "../../config.h"
 #include "../laser/laser.h"
 #include "../motion/motion.h"
+#include "../sensing/sensing.h"
 
 namespace protocol {
 
@@ -90,7 +91,49 @@ void cmdInfo() {
                  " MAX_RPM=" + String(MAX_RPM, 1) + " MAX_MA=" + String(MAX_CURRENT_MA) +
                  " ABS_LIMIT=" + String(lroundf(ABS_LIMIT_TURNS * USTEPS_PER_REV)) +
                  " TRUSTED=" + String(motion::positionsTrusted() ? 1 : 0) +
+                 " ADC=" + String(sensing::present() ? 1 : 0) +
+                 " PD_RF=" + String(PD_REF_TIA_OHMS, 0) + "," + String(PD_OUT_TIA_OHMS, 0) + " PD_RESP=" + String(PD_RESPONSIVITY, 2) +
                  " " + motion::slotMapReport());
+}
+
+void cmdPd(const char *a1, const char *a2) {
+  if (!sensing::present() && !sensing::probe()) {
+    err("ADS1115 not found at 0x" + String(ADS1115_ADDR, HEX) + " - check its I2C wiring and 3V3");
+    return;
+  }
+  if (a1 == nullptr) { Serial.println(sensing::report()); return; }
+
+  if (strcasecmp(a1, "STREAM") == 0) {
+    float hz = 0;
+    bool off = a2 && strcasecmp(a2, "OFF") == 0;
+    if (!off && (!parseFloat(a2, hz) || !sensing::setStream(hz))) {
+      err("PD STREAM takes OFF or 0-" + String(PD_MAX_STREAM_HZ) + " Hz");
+      return;
+    }
+    if (off) sensing::setStream(0);
+    ok("PD STREAM=" + String(sensing::streamHz(), 1));
+    return;
+  }
+
+  if (strcasecmp(a1, "DARK") == 0) {
+    if (a2 && strcasecmp(a2, "CLEAR") == 0) { sensing::clearDark(); ok("PD DARK CLEARED"); return; }
+    if (!sensing::startDark()) err("PD DARK is already running");
+    return;   // sensing replies OK PD DARK REF=.. OUT=.. once it has finished
+  }
+
+  if (strcasecmp(a1, "RANGE") == 0) {
+    float fsr = 0;
+    bool autoRange = a2 && strcasecmp(a2, "AUTO") == 0;
+    if (!autoRange && (!parseFloat(a2, fsr) || fsr <= 0 || !sensing::setRange(fsr))) {
+      err("PD RANGE takes AUTO, 4.096, 2.048, 1.024, 0.512 or 0.256");
+      return;
+    }
+    if (autoRange) sensing::setRange(0);
+    ok(sensing::fixedRange() > 0 ? "PD RANGE=" + String(sensing::fixedRange(), 3) : String("PD RANGE=AUTO"));
+    return;
+  }
+
+  err("PD takes no argument, STREAM, DARK or RANGE");
 }
 
 void handle(char *buf) {
@@ -106,7 +149,10 @@ void handle(char *buf) {
   if (c == "STATUS") { cmdStatus(); return; }
   if (c == "INFO") { cmdInfo(); return; }
 
+  if (c == "PD") { cmdPd(a1, a2); return; }
+
   if (c == "LASER") {
+    if (a1 && sensing::darkBusy()) { err("PD DARK is switching the laser, try again"); return; }
     if (a1 && strcasecmp(a1, "ON") == 0) laser::set(true);
     else if (a1 && strcasecmp(a1, "OFF") == 0) laser::set(false);
     else if (a1) { err("LASER takes ON or OFF"); return; }

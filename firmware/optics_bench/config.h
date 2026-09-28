@@ -68,6 +68,32 @@ constexpr AxisPins AXIS_PINS[NUM_AXES] = {
 #define LASER_PIN         21      // MI pad
 #define LASER_ACTIVE_HIGH true
 
+// ── Photodiodes and ADC ─────────────────────────────────────────────────────
+// Two BPW34 photodiodes, each on its own transimpedance amp (MCP6002, one
+// half used) run from 3V3, read by an Adafruit ADS1115 (product 1085) on the
+// Feather's I2C pads. The Feather V2 powers its STEMMA QT port from GPIO 2,
+// which the board package switches on before setup().
+//   AIN0: reference photodiode (beamsplitter's reflected port)
+//   AIN1: output photodiode (behind the fiber)
+// Vout = I_photo x feedback resistor, so 47 kOhm puts the full 3.3 V swing
+// at 70 uA, about 175 uW of 635 nm light on a BPW34 (the laser is < 1 mW).
+// The ADS1115's own gain ranges (+-4.096 V down to +-0.256 V) cover the dim
+// end: 1 LSB at the finest range is 7.8 uV, about 0.4 nW. If a channel sits
+// near 3.3 V, fit a smaller resistor on that board and change it here; the
+// GUI turns volts into uW with these values.
+#define I2C_SDA_PIN     22
+#define I2C_SCL_PIN     20
+#define I2C_CLOCK_HZ    400000
+#define ADS1115_ADDR    0x48      // ADDR pin to GND
+#define PD_REF_CHANNEL  0
+#define PD_OUT_CHANNEL  1
+#define PD_REF_TIA_OHMS 47000.0f  // feedback resistor, reference TIA board
+#define PD_OUT_TIA_OHMS 47000.0f  // feedback resistor, output TIA board
+#define PD_RESPONSIVITY 0.40f     // BPW34 at 635 nm, A/W (datasheet curve, approximate)
+#define PD_DARK_SAMPLES 32        // samples per channel for PD DARK
+#define PD_SETTLE_MS    30        // after switching the laser, before sampling
+#define PD_MAX_STREAM_HZ 50
+
 // ── Stepping ────────────────────────────────────────────────────────────────
 // NEMA 8, 1.8 deg. The driver interpolates every setting to 256x internally
 // (intpol), so 16x is as smooth as it gets while keeping pulse rates low.

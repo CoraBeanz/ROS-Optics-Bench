@@ -28,6 +28,18 @@
 //   REPROBE <ax>|ALL          re-run the driver config (motors must be still)
 //   SAVE                      write positions to flash now
 //
+// Photodiodes (ADS1115). Volts at the TIA outputs, dark offsets subtracted
+// once PD DARK has run; RATIO is OUT/REF ("-" with the laser off or REF
+// under 10 mV).
+//   PD                        -> PD REF=<V> OUT=<V> RATIO=<r> FSR=<ref>,<out> N=<n>,<n> DARK=0|1 LASER=0|1
+//                                (mean of the N samples since the last PD line)
+//   PD STREAM <hz>|OFF        send a PD line unprompted at <hz> (up to PD_MAX_STREAM_HZ)
+//   PD DARK                   laser off, average both channels, laser back as it was;
+//                             replies OK PD DARK REF=<V> OUT=<V> when done (~0.1 s)
+//   PD DARK CLEAR             stop subtracting the dark offsets
+//   PD RANGE AUTO|<fsr>       ADS1115 gain range: auto, or fixed at 4.096 .. 0.256 V
+//   INFO also carries ADC=0|1 PD_RF=<ref ohms>,<out ohms> PD_RESP=<A/W>.
+//
 // Replies: "OK <CMD> ..." or "ERR <reason>". Unsolicited lines:
 //   EVT DONE <ax> POS=<p> [LIMIT]   a move finished (LIMIT: it stopped at a soft limit)
 //   WARN <text>                     something the operator should know

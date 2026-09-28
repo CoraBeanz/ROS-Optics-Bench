@@ -8,7 +8,7 @@ from xml.sax.saxutils import escape
 W, H = 1420, 1310
 C = dict(pwr="#c62828", gnd="#212121", uart="#6a1b9a", step="#1565c0", dir="#00838f", en="#2e7d32",
          laser="#e65100", strap="#6d4c41", motor="#455a64", box="#fafafa", edge="#424242", mute="#757575",
-         vm="#ad1457")
+         vm="#ad1457", i2c="#5e35b1", pd="#00695c")
 out = []
 
 
@@ -52,14 +52,15 @@ def resistor(x1, x2, y, color, label):
 
 a(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">')
 a(f'<rect width="{W}" height="{H}" fill="#ffffff"/>')
-text(40, 42, "Optics bench wiring: Feather ESP32 V2, 4x Adafruit TMC2209, Quarton laser", 22, weight="bold")
+text(40, 42, "Optics bench wiring: Feather ESP32 V2, 4x Adafruit TMC2209, Quarton laser, ADS1115 and photodiodes",
+     22, weight="bold")
 text(40, 66, "Matches firmware/optics_bench/config.h. Same-named labels are connected. "
      "All grounds (12 V supply, Feather, every breakout) are tied together.", 13, C["mute"])
 
 # ── Feather ──────────────────────────────────────────────────────────────────
 FX, FY, FW = 40, 100, 240
 feather_pins = [  # pad, gpio, net text, colour key
-    ("3V3", None, "3V3 rail (drivers VDD, MS straps, laser)", "pwr"),
+    ("3V3", None, "3V3 rail (drivers, MS straps, laser, ADC, TIAs)", "pwr"),
     ("GND", None, "GND (common)", "gnd"),
     ("RX", 7, None, "uart"),
     ("TX", 8, None, "uart"),
@@ -76,6 +77,8 @@ feather_pins = [  # pad, gpio, net text, colour key
     ("SCK", 5, "M2Y DIR", "dir"),
     ("MO", 19, "M2Y EN", "en"),
     ("MI", 21, "LASER TTL", "laser"),
+    ("SDA", 22, "I2C SDA (ADS1115)", "i2c"),
+    ("SCL", 20, "I2C SCL (ADS1115)", "i2c"),
 ]
 ROW = 34
 fh = 60 + ROW * len(feather_pins) + 40
@@ -93,7 +96,7 @@ for k, (pad, gpio, net, col) in enumerate(feather_pins):
     if net:
         line(FX + FW, y, FX + FW + 40, y, C[col])
         text(FX + FW + 46, y + 4, net, 13, C[col], weight="bold")
-text(FX + FW / 2, FY + fh - 14, "SDA 22 / SCL 20 kept free for the ADS1115", 11, C["mute"], "middle")
+text(FX + FW / 2, FY + fh - 14, "STEMMA QT port = 3V3, GND, SDA, SCL", 11, C["mute"], "middle")
 
 # ── Drivers ──────────────────────────────────────────────────────────────────
 DX, DW, DH, DGAP, DY0 = 660, 470, 256, 22, 100
@@ -207,6 +210,115 @@ notes = [
 for k, n in enumerate(notes):
     text(FX, NY + k * 18, n, 13 if k == 0 else 12, "#212121" if k == 0 else C["mute"], weight="bold" if k == 0 else "normal")
 
+
+# ── Photodiodes: ADS1115 and two transimpedance amps ─────────────────────────
+def gnd(x, y, color=C["gnd"]):
+    line(x, y, x, y + 10, color)
+    for k, half in enumerate((12, 8, 4)):
+        line(x - half, y + 10 + k * 5, x + half, y + 10 + k * 5, color)
+
+
+def tia(ox, oy, title, dest, rf):
+    rect(ox, oy, 560, 330, fill="#e0f2f1")
+    text(ox + 14, oy + 24, title, 15, weight="bold")
+    text(ox + 14, oy + 42, "BPW34 + MCP6002 (DIP-8, half A used) on a small board right behind the diode",
+         12, C["mute"])
+    ax, ay = ox + 260, oy + 205          # op-amp: left edge x, centre y
+    nx = ox + 130                        # inverting-input node x
+    inn, inp = ay - 20, ay + 20
+    a(f'<polygon points="{ax},{ay - 45} {ax},{ay + 45} {ax + 80},{ay}" fill="#ffffff" '
+      f'stroke="{C["edge"]}" stroke-width="2"/>')
+    text(ax + 8, inn + 5, "-", 16, weight="bold")
+    text(ax + 8, inp + 6, "+", 14, weight="bold")
+    text(ax + 26, ay + 4, "MCP6002", 10, C["mute"])
+    text(ax - 6, inn - 5, "2", 11, C["mute"], "end")
+    text(ax - 6, inp - 5, "3", 11, C["mute"], "end")
+    text(ax + 88, ay - 6, "1", 11, C["mute"])
+    # inverting input node, photodiode (cathode up) to ground
+    line(nx, inn, ax, inn, C["pd"])
+    dot(nx, inn, C["pd"])
+    line(nx, inn, nx, inn + 30, C["pd"])
+    cy = inn + 30                        # cathode bar
+    line(nx - 12, cy, nx + 12, cy, C["pd"], 2.5)
+    a(f'<polygon points="{nx},{cy} {nx - 12},{cy + 22} {nx + 12},{cy + 22}" fill="#ffffff" '
+      f'stroke="{C["pd"]}" stroke-width="2"/>')
+    line(nx, cy + 22, nx, cy + 50, C["pd"])
+    gnd(nx, cy + 50)
+    for k in (0, 1):                     # incoming light
+        x0, y0 = nx - 62, cy - 4 + k * 16
+        line(x0, y0, x0 + 30, y0 + 12, "#e53935", 1.6)
+        a(f'<polygon points="{x0 + 34},{y0 + 14} {x0 + 24},{y0 + 14} {x0 + 30},{y0 + 6}" fill="#e53935"/>')
+    text(nx + 16, cy + 4, "K", 11, C["mute"])
+    text(nx + 16, cy + 30, "A", 11, C["mute"])
+    text(nx + 34, cy + 18, "BPW34", 12, C["pd"], weight="bold")
+    # non-inverting input to ground
+    line(ax, inp, ax - 30, inp, C["gnd"])
+    line(ax - 30, inp, ax - 30, inp + 30, C["gnd"])
+    gnd(ax - 30, inp + 30)
+    # feedback: Rf and Cf in parallel from the node to the output
+    fx2 = ax + 120
+    ry, cfy = oy + 135, oy + 92
+    line(nx, inn, nx, cfy, C["pd"])
+    line(nx, ry, ox + 190, ry, C["pd"])
+    resistor(ox + 190, ox + 270, ry, C["pd"], f"Rf {rf}")
+    line(ox + 270, ry, fx2, ry, C["pd"])
+    cx = (nx + fx2) / 2
+    line(nx, cfy, cx - 5, cfy, C["pd"])
+    line(cx - 5, cfy - 12, cx - 5, cfy + 12, C["pd"], 2.5)
+    line(cx + 5, cfy - 12, cx + 5, cfy + 12, C["pd"], 2.5)
+    line(cx + 5, cfy, fx2, cfy, C["pd"])
+    text(cx, cfy - 18, "Cf 1 nF (C0G)", 12, C["pd"], "middle", "bold")
+    line(fx2, cfy, fx2, ay, C["pd"])
+    dot(fx2, ay, C["pd"])
+    line(ax + 80, ay, ox + 470, ay, C["pd"])
+    text(ox + 474, ay - 8, "Vout to", 12, C["pd"], weight="bold")
+    text(ox + 474, ay + 8, dest, 12, C["pd"], weight="bold")
+    text(ox + 14, oy + 296, "Pin 8 VDD to 3V3, pin 4 to GND, 100 nF across pins 8 and 4 at the chip.", 12, C["mute"])
+    text(ox + 14, oy + 314, "Unused half B: pin 5 to GND, pin 6 to pin 7.  Vout = I_photo x Rf (0 V dark, up)",
+         12, C["mute"])
+
+
+BY = max(NY + len(notes) * 18, py + 74) + 50
+text(FX, BY - 16, "Photodiodes", 18, weight="bold")
+AW = 420
+rect(FX, BY, AW, 330, fill="#ede7f6")
+text(FX + 14, BY + 24, "Adafruit ADS1115 16-bit ADC (product 1085)", 15, weight="bold")
+text(FX + 14, BY + 42, "I2C address 0x48. A STEMMA QT cable to the Feather", 12, C["mute"])
+text(FX + 14, BY + 58, "carries 3V3, GND, SDA and SCL in one plug.", 12, C["mute"])
+ads_rows = [
+    ("VDD", "Feather 3V3", "pwr"), ("GND", "Feather GND", "gnd"), ("SCL", "Feather SCL (GPIO 20)", "i2c"),
+    ("SDA", "Feather SDA (GPIO 22)", "i2c"), ("ADDR", "GND (address 0x48)", "gnd"), ("ALRT", "not connected", "mute"),
+    ("A0", "Vout of the reference TIA", "pd"), ("A1", "Vout of the output TIA", "pd"),
+    ("A2", "not connected", "mute"), ("A3", "not connected", "mute"),
+]
+for r, (pin, dest, col) in enumerate(ads_rows):
+    y = BY + 88 + r * 22
+    text(FX + 24, y, pin, 13, weight="bold", family="Menlo, Consolas, monospace")
+    text(FX + 90, y, dest, 13, C[col], weight="bold" if col != "mute" else "normal")
+tia(FX + AW + 30, BY, "Reference photodiode (beamsplitter reflected port)", "ADS1115 A0", "47 kOhm")
+tia(FX + AW + 30, BY + 350, "Output photodiode (behind the fiber)", "ADS1115 A1", "47 kOhm")
+PN = BY + 350
+pd_notes = [
+    "Photodiode notes",
+    "- Cathode to pin 2, anode to GND (zero bias).",
+    "  The output then rises from 0 V with light.",
+    "- To find the anode: in room light a meter on",
+    "  DC volts reads about +0.3 V with the red",
+    "  probe on the anode.",
+    "- Keep diode leads under 10 mm; run a twisted",
+    "  pair (Vout + GND) to the ADS1115.",
+    "- 47 kOhm puts 3.3 V at 70 uA (about 175 uW).",
+    "  Fit a smaller Rf if a channel saturates and",
+    "  set PD_REF/OUT_TIA_OHMS in config.h to match.",
+    "- Rf x Cf = 47 us, a 3.4 kHz bandwidth.",
+]
+for k, n in enumerate(pd_notes):
+    text(FX, PN + 20 + k * 18, n, 13 if k == 0 else 12, "#212121" if k == 0 else C["mute"],
+         weight="bold" if k == 0 else "normal")
+
+H = BY + 350 + 330 + 30
+out[0] = f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">'
+out[1] = f'<rect width="{W}" height="{H}" fill="#ffffff"/>'
 a("</svg>")
 open(sys.argv[1], "w").write("\n".join(out) + "\n")
-print("height used:", NY + len(notes) * 18, "of", H)
+print("height:", H)

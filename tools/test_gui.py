@@ -12,22 +12,30 @@ Keyboard (when no text box has focus), one step of the selected size per press:
     Left/Right  M1X -/+      Down/Up  M1Y -/+
     A/D         M2X -/+      S/W      M2Y -/+
     L           laser on/off Esc      stop all motors
+
+The photodiode panel shows the reference and output photodiode voltages from
+the ADS1115, the output/reference ratio, and a rolling plot of both.
 """
 
 import argparse
+import csv
 import html
+import math
 import queue
+import random
 import sys
 import threading
 import time
 
-from PySide6.QtCore import QEvent, QObject, Qt, QTimer
-from PySide6.QtGui import QColor, QFont, QPalette, QTextCursor
+from collections import deque
+
+from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, QTimer
+from PySide6.QtGui import QColor, QFont, QPainter, QPalette, QPen, QPolygonF, QTextCursor
 from PySide6.QtWidgets import (
     QAbstractSpinBox, QApplication, QCheckBox, QComboBox, QDoubleSpinBox,
-    QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMainWindow,
-    QMessageBox, QPushButton, QSpinBox, QStatusBar, QTextEdit, QVBoxLayout,
-    QWidget,
+    QFileDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
+    QMainWindow, QMessageBox, QPushButton, QSpinBox, QStatusBar, QTextEdit,
+    QVBoxLayout, QWidget,
 )
 
 try:
@@ -113,11 +121,25 @@ class SerialLink:
 
 class SimLink:
     """Rough stand-in for the firmware so the GUI can be tried without hardware.
-    Constant-speed moves, no ramps, drivers always answer."""
+    Constant-speed moves, no ramps, drivers always answer. The photodiodes see
+    a Gaussian coupling hill around a hidden best position of the four axes,
+    so the ratio climbs as you jog toward it."""
 
     USTEPS_PER_REV = 3200
+    PD_BEST = [1500, -900, 600, 2200]    # microsteps where coupling peaks
+    PD_WIDTH = 2500                      # microsteps, 1/e half-width per axis
+    PD_REF_LIT, PD_PEAK_RATIO = 1.60, 0.55
+    PD_DARK_V = (0.004, 0.003)           # TIA offset + room light
+    FSRS = (4.096, 2.048, 1.024, 0.512, 0.256)
 
     def __init__(self):
+        self.stream_hz = 0.0
+        self.next_stream = 0.0
+        self.dark = (0.0, 0.0)
+        self.have_dark = False
+        self.dark_done_at = None
+        self.dark_laser = False
+        self.fixed_fsr = None
         self.rx = queue.Queue()
         self.lock = threading.Lock()
         n = len(AXES)
@@ -159,6 +181,67 @@ class SimLink:
                         self.limited[i] = False
                         self.jog_deadline[i] = None
                         self.rx.put(f"EVT DONE {AXES[i]} POS={p}" + (" LIMIT" if at else ""))
+                if self.dark_done_at and now >= self.dark_done_at:
+                    self.dark_done_at = None
+                    self.dark = self._pd_raw()
+                    self.have_dark = True
+                    self.laser = self.dark_laser
+                    self.rx.put(f"OK PD DARK REF={self.dark[0]:.6f} OUT={self.dark[1]:.6f}")
+                if self.stream_hz and now >= self.next_stream and not self.dark_done_at:
+                    self.next_stream = now + 1 / self.stream_hz
+                    self.rx.put(self._pd_line(round(400 / self.stream_hz)))
+
+    def _pd_raw(self):
+        """Instantaneous TIA voltages (ref, out) with a little noise."""
+        ref = out = 0.0
+        if self.laser:
+            ref = self.PD_REF_LIT * (1 + random.gauss(0, 0.002))
+            d2 = sum(((self.pos[i] - self.PD_BEST[i]) / self.PD_WIDTH) ** 2 for i in range(len(AXES)))
+            out = ref * self.PD_PEAK_RATIO * math.exp(-d2)
+        return (ref + self.PD_DARK_V[0] + random.gauss(0, 0.0003),
+                out + self.PD_DARK_V[1] + random.gauss(0, 0.00005))
+
+    def _fsr(self, v):
+        if self.fixed_fsr:
+            return self.fixed_fsr
+        return next((f for f in reversed(self.FSRS) if v < 0.9 * f), self.FSRS[0])
+
+    def _pd_line(self, n):
+        raw = self._pd_raw()
+        ref, out = (raw[k] - self.dark[k] if self.have_dark else raw[k] for k in (0, 1))
+        ratio = f"{out / ref:.6f}" if self.laser and ref > 0.010 else "-"
+        return (f"PD REF={ref:.6f} OUT={out:.6f} RATIO={ratio} FSR={self._fsr(raw[0]):.3f},{self._fsr(raw[1]):.3f} "
+                f"N={n},{n} DARK={int(self.have_dark)} LASER={int(self.laser)}")
+
+    def _pd(self, a):
+        sub = (a[0] or "").upper()
+        if not sub:
+            return self._pd_line(1)
+        if sub == "STREAM":
+            hz = 0.0 if (a[1] or "").upper() == "OFF" else float(a[1])
+            if not 0 <= hz <= 50:
+                return "ERR PD STREAM takes OFF or 0-50 Hz"
+            self.stream_hz, self.next_stream = hz, time.monotonic()
+            return f"OK PD STREAM={hz:.1f}"
+        if sub == "DARK":
+            if (a[1] or "").upper() == "CLEAR":
+                self.have_dark, self.dark = False, (0.0, 0.0)
+                return "OK PD DARK CLEARED"
+            if self.dark_done_at:
+                return "ERR PD DARK is already running"
+            self.dark_laser, self.laser = self.laser, False
+            self.dark_done_at = time.monotonic() + 0.12
+            return None
+        if sub == "RANGE":
+            v = (a[1] or "").upper()
+            if v == "AUTO":
+                self.fixed_fsr = None
+                return "OK PD RANGE=AUTO"
+            if v and float(v) in self.FSRS:
+                self.fixed_fsr = float(v)
+                return f"OK PD RANGE={self.fixed_fsr:.3f}"
+            return "ERR PD RANGE takes AUTO, 4.096, 2.048, 1.024, 0.512 or 0.256"
+        return "ERR PD takes no argument, STREAM, DARK or RANGE"
 
     def _axis(self, tok, allow_all=False):
         if tok is None:
@@ -206,8 +289,13 @@ class SimLink:
                     f"MIN={csv(lambda i: self.lo[i])} MAX={csv(lambda i: self.hi[i])} "
                     f"RPM={csv(lambda i: self.rpm[i])} ACCEL={csv(lambda i: self.acc[i])} "
                     f"MA={csv(lambda i: self.ma[i])} MAX_RPM=120.0 MAX_MA=420 "
-                    f"ABS_LIMIT={8 * self.USTEPS_PER_REV} TRUSTED=1 slots=sim")
+                    f"ABS_LIMIT={8 * self.USTEPS_PER_REV} TRUSTED=1 ADC=1 PD_RF=47000,47000 PD_RESP=0.40 "
+                    f"slots=sim")
+        if c == "PD":
+            return self._pd(a)
         if c == "LASER":
+            if a[0] and self.dark_done_at:
+                return "ERR PD DARK is switching the laser, try again"
             if a[0]:
                 self.laser = a[0].upper() == "ON"
             return f"OK LASER={int(self.laser)}"
@@ -455,6 +543,116 @@ class AxisRow:
         self.drv_dot.set_state("off")
 
 
+PD_RATES = [5, 10, 20, 50]           # PD STREAM choices, Hz
+PD_SPANS = [("10 s", 10), ("30 s", 30), ("2 min", 120), ("10 min", 600)]
+PD_RANGES = ["AUTO", "4.096", "2.048", "1.024", "0.512", "0.256"]
+PD_HISTORY = 50 * 600                # samples kept: 10 minutes at the top rate
+REF_COLOR, OUT_COLOR, RATIO_COLOR = "#4a9eff", "#2ecc40", "#ff851b"
+
+
+def si(v, unit):
+    """1.23e-6, 'W' -> '1.230 uW'"""
+    for scale, prefix in ((1, ""), (1e-3, "m"), (1e-6, "u"), (1e-9, "n")):
+        if abs(v) >= scale or scale == 1e-9:
+            return f"{v / scale:.3f} {prefix}{unit}"
+
+
+class PlotWidget(QWidget):
+    """Rolling strip chart over the shared photodiode history, drawn with
+    QPainter so the panel needs nothing beyond PySide6. Each series is
+    (index into the history tuples, colour, label)."""
+
+    def __init__(self, history, series, title, unit="", zero_based=True):
+        super().__init__()
+        self.history, self.series, self.title, self.unit = history, series, title, unit
+        self.zero_based = zero_based
+        self.span = 30.0
+        self.log = False
+        self.setMinimumHeight(130)
+
+    def paintEvent(self, event):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        r = self.rect()
+        p.fillRect(r, QColor(30, 30, 30))
+        left, top, right, bottom = 62, 20, r.width() - 10, r.height() - 20
+        plot = QRectF(left, top, max(1, right - left), max(1, bottom - top))
+        p.setPen(QColor(85, 85, 85))
+        p.drawRect(plot)
+        p.setFont(QFont(MONO, 8))
+
+        now = self.history[-1][0] if self.history else 0.0
+        t0 = now - self.span
+        pts = [h for h in self.history if h[0] >= t0]
+        vals = [h[k] for h in pts for k, _c, _l in self.series if h[k] is not None]
+        if self.log:
+            vals = [v for v in vals if v > 0]
+        if vals:
+            lo, hi = min(vals), max(vals)
+        else:
+            lo, hi = 0.0, 1.0
+        if self.log:
+            lo, hi = math.log10(max(lo, 1e-6)), math.log10(max(hi, 1e-6))
+            lo, hi = math.floor(lo), math.ceil(hi) if hi > lo else math.floor(lo) + 1
+        else:
+            if self.zero_based:
+                lo = min(lo, 0.0)
+            pad = (hi - lo) * 0.08 or max(abs(hi) * 0.1, 1e-3)
+            hi += pad
+            if not self.zero_based or lo < 0:
+                lo -= pad
+
+        def y_of(v):
+            if self.log:
+                v = math.log10(max(v, 10 ** lo))
+            return plot.bottom() - (v - lo) / (hi - lo) * plot.height()
+
+        def x_of(t):
+            return plot.left() + (t - t0) / self.span * plot.width()
+
+        # grid and labels
+        ticks = range(int(lo), int(hi) + 1) if self.log else [lo + (hi - lo) * k / 4 for k in range(5)]
+        for tv in ticks:
+            y = plot.bottom() - (tv - lo) / (hi - lo) * plot.height()
+            p.setPen(QColor(55, 55, 58))
+            p.drawLine(QPointF(plot.left(), y), QPointF(plot.right(), y))
+            p.setPen(QColor(150, 150, 150))
+            label = f"1e{tv}" if self.log else f"{tv:.4g}"
+            p.drawText(QRectF(0, y - 8, left - 6, 16), Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                       label)
+        for k in range(1, 5):
+            x = plot.left() + plot.width() * k / 5
+            p.setPen(QColor(55, 55, 58))
+            p.drawLine(QPointF(x, plot.top()), QPointF(x, plot.bottom()))
+            p.setPen(QColor(150, 150, 150))
+            p.drawText(QRectF(x - 30, plot.bottom() + 2, 60, 16), Qt.AlignmentFlag.AlignHCenter,
+                       f"-{self.span * (5 - k) / 5:g}s")
+
+        # traces
+        p.setClipRect(plot)
+        for k, color, _label in self.series:
+            poly = QPolygonF()
+            for h in pts:
+                v = h[k]
+                if v is None or (self.log and v <= 0):
+                    continue
+                poly.append(QPointF(x_of(h[0]), y_of(v)))
+            p.setPen(QPen(QColor(color), 1.6))
+            p.drawPolyline(poly)
+        p.setClipping(False)
+
+        # title and legend
+        p.setFont(QFont(MONO, 9, QFont.Weight.Bold))
+        p.setPen(QColor(220, 220, 220))
+        x = left
+        p.drawText(QPointF(x, 14), self.title + (f" ({self.unit})" if self.unit else ""))
+        x += p.fontMetrics().horizontalAdvance(self.title + (f" ({self.unit})" if self.unit else "")) + 16
+        for _k, color, label in self.series:
+            p.setPen(QColor(color))
+            p.drawText(QPointF(x, 14), "━ " + label)
+            x += p.fontMetrics().horizontalAdvance("━ " + label) + 14
+
+
 class TestApp(QMainWindow):
     def __init__(self, sim=False):
         super().__init__()
@@ -463,8 +661,13 @@ class TestApp(QMainWindow):
         self.usteps_per_rev = 3200
         self.laser_on = False
         self.jog_timers = {}
+        self.pd_rf = [47000.0, 47000.0]      # TIA feedback resistors, from INFO
+        self.pd_resp = 0.40                  # A/W, from INFO
+        self.pd_hist = deque(maxlen=PD_HISTORY)   # (t, ref V, out V, ratio or None, laser, fsr ref, fsr out)
+        self.pd_t0 = None
+        self.pd_peak = None
         self.setWindowTitle("Optics bench test panel")
-        self.resize(1180, 720)
+        self.resize(1180, 960)
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -472,6 +675,7 @@ class TestApp(QMainWindow):
         outer.addLayout(self._build_connection_bar())
         outer.addLayout(self._build_controls())
         outer.addWidget(self._build_axes())
+        outer.addWidget(self._build_photodiodes(), stretch=2)
         outer.addWidget(self._build_console(), stretch=1)
         self.setStatusBar(QStatusBar())
 
@@ -576,6 +780,121 @@ class TestApp(QMainWindow):
         self.rows = [AxisRow(self, g, i, i + 1) for i in range(len(AXES))]
         return box
 
+    def _build_photodiodes(self):
+        box = QGroupBox("Photodiodes (ADS1115: A0 reference, A1 output)")
+        h = QHBoxLayout(box)
+
+        g = QGridLayout()
+        g.setVerticalSpacing(4)
+        self.adc_dot = StatusDot("ADC: -")
+        self.adc_dot.setToolTip("ADS1115 at 0x48 on SDA 22 / SCL 20, from INFO (ADC=1) or a PD reply")
+        g.addWidget(self.adc_dot, 0, 0)
+        self.dark_dot = StatusDot("DARK: off")
+        self.dark_dot.setToolTip("Laser-off offsets from Measure dark are being subtracted")
+        g.addWidget(self.dark_dot, 0, 1)
+
+        big = QFont(MONO, 16, QFont.Weight.Bold)
+        self.pd_val, self.pd_sub = [], []
+        for row, (name, color) in enumerate((("Reference", REF_COLOR), ("Output", OUT_COLOR)), start=1):
+            lbl = QLabel(name)
+            lbl.setStyleSheet(f"color: {color}; font-weight: bold;")
+            g.addWidget(lbl, 2 * row - 1, 0)
+            v = QLabel("-")
+            v.setFont(big)
+            v.setStyleSheet(f"color: {color};")
+            v.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            v.setMinimumWidth(150)
+            g.addWidget(v, 2 * row - 1, 1)
+            s = QLabel("")
+            s.setFont(QFont(MONO, 9))
+            s.setStyleSheet("color: #999;")
+            s.setAlignment(Qt.AlignmentFlag.AlignRight)
+            g.addWidget(s, 2 * row, 0, 1, 2)
+            self.pd_val.append(v)
+            self.pd_sub.append(s)
+        lbl = QLabel("Ratio out/ref")
+        lbl.setStyleSheet(f"color: {RATIO_COLOR}; font-weight: bold;")
+        g.addWidget(lbl, 5, 0)
+        self.ratio_val = QLabel("-")
+        self.ratio_val.setFont(big)
+        self.ratio_val.setStyleSheet(f"color: {RATIO_COLOR};")
+        self.ratio_val.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        g.addWidget(self.ratio_val, 5, 1)
+        self.peak_lbl = QLabel("peak -")
+        self.peak_lbl.setFont(QFont(MONO, 9))
+        self.peak_lbl.setStyleSheet("color: #999;")
+        self.peak_lbl.setAlignment(Qt.AlignmentFlag.AlignRight)
+        g.addWidget(self.peak_lbl, 6, 0, 1, 2)
+
+        ctl = QGridLayout()
+        self.live_chk = QCheckBox("Live")
+        self.live_chk.setToolTip("PD STREAM: the firmware sends averaged readings at this rate")
+        self.live_chk.toggled.connect(self.pd_stream_changed)
+        ctl.addWidget(self.live_chk, 0, 0)
+        self.rate_box = QComboBox()
+        self.rate_box.addItems([f"{r} Hz" for r in PD_RATES])
+        self.rate_box.setCurrentIndex(2)
+        self.rate_box.currentIndexChanged.connect(lambda _i: self.pd_stream_changed())
+        ctl.addWidget(self.rate_box, 0, 1)
+        b = QPushButton("Read once")
+        b.clicked.connect(lambda: self.send("PD"))
+        ctl.addWidget(b, 0, 2)
+        b = QPushButton("Measure dark")
+        b.setToolTip("PD DARK: laser off, average both channels, laser back as it was.\n"
+                     "The offsets (TIA offset + room light) are then subtracted from every reading.")
+        b.clicked.connect(lambda: self.send("PD DARK"))
+        ctl.addWidget(b, 1, 0, 1, 2)
+        b = QPushButton("Clear dark")
+        b.clicked.connect(lambda: self.send("PD DARK CLEAR"))
+        ctl.addWidget(b, 1, 2)
+        ctl.addWidget(QLabel("ADC range"), 2, 0)
+        self.range_box = QComboBox()
+        self.range_box.addItems([r if r == "AUTO" else f"±{r} V" for r in PD_RANGES])
+        self.range_box.setToolTip("ADS1115 gain range. Auto picks the finest range per channel;\n"
+                                  "a fixed range avoids range switches during a scan.")
+        self.range_box.currentIndexChanged.connect(lambda i: self.send(f"PD RANGE {PD_RANGES[i]}"))
+        ctl.addWidget(self.range_box, 2, 1, 1, 2)
+        b = QPushButton("Reset peak")
+        b.clicked.connect(self.reset_peak)
+        ctl.addWidget(b, 3, 0)
+        b = QPushButton("Clear plot")
+        b.clicked.connect(self.clear_pd_history)
+        ctl.addWidget(b, 3, 1)
+        b = QPushButton("Save CSV...")
+        b.setToolTip("Save the recorded readings (up to the last 10 minutes)")
+        b.clicked.connect(self.save_pd_csv)
+        ctl.addWidget(b, 3, 2)
+        ctl.addWidget(QLabel("Plot span"), 4, 0)
+        self.span_box = QComboBox()
+        self.span_box.addItems([s for s, _ in PD_SPANS])
+        self.span_box.setCurrentIndex(1)
+        self.span_box.currentIndexChanged.connect(self.set_plot_span)
+        ctl.addWidget(self.span_box, 4, 1)
+        self.log_chk = QCheckBox("Log volts")
+        self.log_chk.toggled.connect(self.set_plot_log)
+        ctl.addWidget(self.log_chk, 4, 2)
+
+        left = QVBoxLayout()
+        left.addLayout(g)
+        left.addSpacing(6)
+        left.addLayout(ctl)
+        left.addStretch()
+        h.addLayout(left)
+
+        plots = QVBoxLayout()
+        self.volt_plot = PlotWidget(self.pd_hist, [(1, REF_COLOR, "reference"), (2, OUT_COLOR, "output")],
+                                    "Photodiode voltage", "V")
+        self.ratio_plot = PlotWidget(self.pd_hist, [(3, RATIO_COLOR, "out/ref")], "Ratio", zero_based=False)
+        plots.addWidget(self.volt_plot, stretch=3)
+        plots.addWidget(self.ratio_plot, stretch=2)
+        h.addLayout(plots, stretch=1)
+        self.plot_timer = QTimer(self)
+        self.plot_timer.setInterval(100)
+        self.plot_timer.timeout.connect(self._repaint_plots)
+        self.plot_timer.start()
+        self._plots_dirty = False
+        return box
+
     def _build_console(self):
         box = QGroupBox("Serial console")
         v = QVBoxLayout(box)
@@ -648,6 +967,7 @@ class TestApp(QMainWindow):
         self.set_connected(True)
         self.log(f"connected to {choice}", "info")
         self.send("INFO")
+        self.pd_resync()
         self.poll_timer.start()
 
     def disconnect(self):
@@ -658,6 +978,7 @@ class TestApp(QMainWindow):
             try:
                 self.link.send("STOP ALL")
                 self.link.send("LASER OFF")
+                self.link.send("PD STREAM OFF")
                 time.sleep(0.05)
             except Exception:
                 pass
@@ -681,6 +1002,7 @@ class TestApp(QMainWindow):
             self.show_laser(False)
             for r in self.rows:
                 r.clear()
+            self.adc_dot.set_state("off", "ADC: -")
 
     def closeEvent(self, event):
         self.disconnect()
@@ -747,6 +1069,98 @@ class TestApp(QMainWindow):
         self.send(f"CURRENT ALL {self.ma_box.value()}")
         self.send("INFO")
 
+    # ── photodiodes ─────────────────────────────────────────────────────────
+    def pd_stream_changed(self, *_):
+        if self.live_chk.isChecked():
+            self.send(f"PD STREAM {PD_RATES[self.rate_box.currentIndex()]}")
+        else:
+            self.send("PD STREAM OFF")
+
+    def pd_resync(self):
+        """After a connect or a board reboot: put streaming and range back."""
+        if self.range_box.currentIndex():
+            self.send(f"PD RANGE {PD_RANGES[self.range_box.currentIndex()]}")
+        if self.live_chk.isChecked():
+            self.pd_stream_changed()
+
+    def reset_peak(self):
+        self.pd_peak = None
+        self.peak_lbl.setText("peak -")
+
+    def clear_pd_history(self):
+        self.pd_hist.clear()
+        self.pd_t0 = None
+        self._plots_dirty = True
+
+    def set_plot_span(self, i):
+        for plot in (self.volt_plot, self.ratio_plot):
+            plot.span = float(PD_SPANS[i][1])
+        self._plots_dirty = True
+
+    def set_plot_log(self, on):
+        self.volt_plot.log = on
+        self._plots_dirty = True
+
+    def _repaint_plots(self):
+        if self._plots_dirty:
+            self._plots_dirty = False
+            self.volt_plot.update()
+            self.ratio_plot.update()
+
+    def save_pd_csv(self):
+        if not self.pd_hist:
+            return self.log("no photodiode readings recorded yet", "warn")
+        path, _ = QFileDialog.getSaveFileName(self, "Save photodiode readings",
+                                              time.strftime("pd_%Y%m%d_%H%M%S.csv"), "CSV (*.csv)")
+        if not path:
+            return
+        try:
+            with open(path, "w", newline="") as f:
+                w = csv.writer(f)
+                w.writerow(["t_s", "ref_V", "out_V", "ratio", "laser", "fsr_ref_V", "fsr_out_V",
+                            "ref_uW", "out_uW"])
+                for t, ref, out, ratio, laser, fr, fo in self.pd_hist:
+                    w.writerow([f"{t:.3f}", f"{ref:.6f}", f"{out:.6f}", "" if ratio is None else f"{ratio:.6f}",
+                                laser, fr, fo, f"{self.pd_watts(0, ref) * 1e6:.4f}",
+                                f"{self.pd_watts(1, out) * 1e6:.4f}"])
+        except OSError as e:
+            return self.log(f"could not save {path}: {e}", "err")
+        self.log(f"saved {len(self.pd_hist)} readings to {path}", "info")
+
+    def pd_watts(self, ch, volts):
+        return volts / self.pd_rf[ch] / self.pd_resp
+
+    def show_adc(self, present):
+        self.adc_dot.set_state("ok" if present else "bad", "ADC: ok" if present else "ADC: not found")
+
+    def handle_pd(self, line):
+        f = parse_fields(line)
+        try:
+            ref, out = float(f["REF"]), float(f["OUT"])
+            fsr = f.get("FSR", "0,0").split(",")
+        except (KeyError, ValueError):
+            return
+        ratio = None if f.get("RATIO", "-") == "-" else float(f["RATIO"])
+        now = time.monotonic()
+        if self.pd_t0 is None:
+            self.pd_t0 = now
+        self.pd_hist.append((now - self.pd_t0, ref, out, ratio, int(f.get("LASER", "0")), fsr[0], fsr[-1]))
+        self._plots_dirty = True
+        self.show_adc(True)
+        dark = f.get("DARK") == "1"
+        self.dark_dot.set_state("ok" if dark else "off", "DARK: subtracted" if dark else "DARK: off")
+        for ch, v in enumerate((ref, out)):
+            self.pd_val[ch].setText(f"{v:.5f} V")
+            amps = v / self.pd_rf[ch]
+            self.pd_sub[ch].setText(f"{si(amps, 'A')}  {si(self.pd_watts(ch, v), 'W')}  ±{fsr[ch]} V")
+        if ratio is None:
+            self.ratio_val.setText("-")
+        else:
+            self.ratio_val.setText(f"{ratio:.5f}")
+            if self.pd_peak is None or ratio > self.pd_peak[0]:
+                self.pd_peak = (ratio, [r.pos_lbl.text() for r in self.rows])
+            self.peak_lbl.setText(f"peak {self.pd_peak[0]:.5f} at {', '.join(self.pd_peak[1])}")
+
     # ── receiving ───────────────────────────────────────────────────────────
     def drain(self):
         while self.link:
@@ -770,6 +1184,11 @@ class TestApp(QMainWindow):
                 r.show(pos[i], tgt[i], mov[i], en[i], drv[i])
             self.show_laser(f.get("LASER") == "1")
             return
+        if head == "PD":
+            self.handle_pd(line)
+            if not self.live_chk.isChecked():
+                self.log(line)
+            return
         if head == "INFO":
             f = parse_fields(line)
             try:
@@ -783,17 +1202,33 @@ class TestApp(QMainWindow):
                                       f"{f.get('slots', '')}")
             except (KeyError, ValueError):
                 pass
+            try:
+                rf = [float(x) for x in f["PD_RF"].split(",")]
+                self.pd_rf = (rf * 2)[:2]
+                self.pd_resp = float(f["PD_RESP"])
+            except (KeyError, ValueError):
+                pass
+            if "ADC" in f:
+                self.show_adc(f["ADC"] == "1")
             if f.get("TRUSTED") == "0":
                 self.log("positions may be off: power was lost during a move", "warn")
                 self.statusBar().showMessage("⚠ Positions may be off: power was lost during a move")
         elif head == "READY":
             self.send("INFO")  # the board rebooted
+            self.pd_resync()
         elif head == "LINK_ERROR":
             self.log(line, "err")
             self.disconnect()
             return
         if head == "OK" and "LASER=" in line:
             self.show_laser(line.rstrip().endswith("LASER=1"))
+        if line.startswith("OK PD DARK REF="):
+            self.dark_dot.set_state("ok", "DARK: subtracted")
+        elif line.startswith("OK PD DARK CLEARED"):
+            self.dark_dot.set_state("off", "DARK: off")
+        elif head == "ERR" and "ADS1115" in line:
+            self.show_adc(False)
+            self.live_chk.setChecked(False)
         tag = "err" if head == "ERR" else "warn" if head == "WARN" else None
         self.log(line, tag)
 

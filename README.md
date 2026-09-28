@@ -60,12 +60,15 @@ Code in `src/` is compiled with the sketch automatically. Record any library add
 | --- | --- | --- |
 | TMCStepper (teemuatlut) | 0.7.3 | TMC2209 register setup over UART |
 | AccelStepper (Mike McCauley) | 1.64 | Ramped STEP/DIR motion |
+| Adafruit ADS1X15 | 2.6.2 | ADS1115 photodiode ADC over I2C (pulls in Adafruit BusIO) |
 
-Every pin is set in `firmware/optics_bench/config.h`. The wiring diagram and full pin table for the Feather ESP32 V2, the four Adafruit TMC2209 breakouts and the laser are in [electronics/wiring.md](electronics/wiring.md).
+The firmware was last built with the esp32 boards package 3.3.7.
+
+Every pin is set in `firmware/optics_bench/config.h`. The wiring diagram and full pin table for the Feather ESP32 V2, the four Adafruit TMC2209 breakouts, the laser, the ADS1115 and the two photodiode amplifier boards are in [electronics/wiring.md](electronics/wiring.md).
 
 ## Bench test panel
 
-`tools/test_gui.py` is a small desktop app for the first bench tests: laser on/off, and jog, nudge and go-to for the four mirror motors. It is a dark-mode Qt window built on PySide6 (the LGPL Qt binding) and pyserial, both listed in `tools/requirements.txt`.
+`tools/test_gui.py` is a small desktop app for the first bench tests: laser on/off, jog, nudge and go-to for the four mirror motors, and live photodiode readings. It is a dark-mode Qt window built on PySide6 (the LGPL Qt binding) and pyserial, both listed in `tools/requirements.txt`.
 
 ```
 py -3 -m pip install -r tools/requirements.txt
@@ -80,6 +83,7 @@ py -3 tools/test_gui.py --sim    # try it without hardware
 - **Hold-to-jog** (the double arrows) keeps a motor running while the button is held. The firmware stops it by itself if the panel stops refreshing the jog, so a crashed GUI can't run a motor to its limit.
 - **Keys:** arrows move M1 (Left/Right = M1X, Down/Up = M1Y), A/D and S/W move M2X and M2Y by the selected step, L toggles the laser, Esc stops everything.
 - **Diag** shows the TMC2209 status (current, StealthChop, overtemperature, short and open-load flags). A driver that doesn't answer on the UART shows a red dot and refuses to move.
+- **Photodiodes.** Tick **Live** to stream the reference and output photodiode voltages (5 to 50 readings a second, each the average of all ADC samples since the last one). The panel shows each voltage with its photocurrent and optical power, the output/reference ratio with the best ratio seen and the motor positions where it happened, and a rolling plot (log scale optional). **Measure dark** switches the laser off briefly, records the offsets and subtracts them from then on. **ADC range** fixes the ADS1115 gain instead of auto-ranging, and **Save CSV** writes up to the last 10 minutes of readings. In `--sim` the output rises as you jog the mirrors toward a hidden best position.
 
 The serial protocol is plain text and documented in `firmware/optics_bench/src/comms/protocol.h`, so the Serial Monitor or the Jetson can use the same commands.
 
@@ -89,7 +93,8 @@ The serial protocol is plain text and documented in `firmware/optics_bench/src/c
 2. With the 12 V supply on, send `REPROBE ALL` (or just move the axis, which retries). The dots should go green, and the connection bar should say `slots=ok`.
 3. Take the hex bits out of the adjusters and nudge each motor by 1/4 turn to check which way positive turns. Flip it with `invert` in `config.h` if needed.
 4. Refit the bits, "Set 0" on each axis, and start aligning.
+5. With the ADS1115 and photodiode boards connected, the photodiode panel should show `ADC: ok`. Cover each diode and shine a light on it to check its channel, then press **Measure dark** with the room lit as it will be during runs.
 
 ## Status
 
-Bench testing. The firmware drives the laser and the four mirror motors, and `tools/test_gui.py` is the test panel. Photodiode sensing and the ROS 2 host side have not been started.
+Bench testing. The firmware drives the laser and the four mirror motors and reads both photodiodes through the ADS1115, and `tools/test_gui.py` is the test panel. The photodiode boards are designed but not yet built or tested. The ROS 2 host side has not been started.
