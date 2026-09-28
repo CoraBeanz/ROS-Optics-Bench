@@ -2,7 +2,7 @@
 // Open this folder in the Arduino IDE; the sketch name must match the folder name.
 //
 // Bench-test firmware: laser on/off plus four TMC2209-driven NEMA 8 steppers
-// turning the M1/M2 kinematic mount adjusters. Driven from tools/bench_gui.py
+// turning the M1/M2 kinematic mount adjusters. Driven from tools/test_gui.py
 // (or the Serial Monitor) with the protocol in src/comms/protocol.h.
 
 #include "config.h"

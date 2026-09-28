@@ -1,7 +1,7 @@
 #pragma once
 
 // Line-based ASCII protocol on the USB serial port, used by
-// tools/bench_gui.py and later by the Jetson. One command per line,
+// tools/test_gui.py and later by the Jetson. One command per line,
 // case-insensitive, fields separated by spaces. <ax> is M1X, M1Y, M2X, M2Y
 // or 1-4; commands marked [ALL] also take ALL. Positions are in microsteps
 // (INFO reports USTEPS_PER_REV; one adjuster turn at 100 TPI = 0.254 mm).

@@ -65,13 +65,15 @@ Every pin is set in `firmware/optics_bench/config.h`. The wiring diagram and ful
 
 ## Bench test panel
 
-`tools/bench_gui.py` is a small desktop app for the first bench tests: laser on/off, and jog, nudge and go-to for the four mirror motors.
+`tools/test_gui.py` is a small desktop app for the first bench tests: laser on/off, and jog, nudge and go-to for the four mirror motors. It is a dark-mode Qt window built on PySide6 (the LGPL Qt binding) and pyserial, both listed in `tools/requirements.txt`.
 
 ```
-pip install -r tools/requirements.txt
-python tools/bench_gui.py          # pick the ESP32's COM port, Connect
-python tools/bench_gui.py --sim    # try it without hardware
+py -3 -m pip install -r tools/requirements.txt
+py -3 tools/test_gui.py          # pick the ESP32's COM port, Connect
+py -3 tools/test_gui.py --sim    # try it without hardware
 ```
+
+`py -3` picks the regular Python install on Windows; a bare `python` can resolve to another bundled interpreter such as KiCad's.
 
 - **Positions** are in microsteps, 3200 per adjuster turn. One turn of a 100 TPI adjuster is 254 um, so a full step is about 1.3 um of screw travel.
 - **Zero and soft limits.** "Set 0" calls the current knob position zero. The soft limits (default -3 to +3 turns, adjustable up to +-8) stay relative to zero, because the hex bit only has about 4 turns of engagement one way. Positions and limits are saved to flash and survive a power cycle. If power drops mid-move, the panel warns that positions may be off.
@@ -90,4 +92,4 @@ The serial protocol is plain text and documented in `firmware/optics_bench/src/c
 
 ## Status
 
-Bench testing. The firmware drives the laser and the four mirror motors, and `tools/bench_gui.py` is the test panel. Photodiode sensing and the ROS 2 host side have not been started.
+Bench testing. The firmware drives the laser and the four mirror motors, and `tools/test_gui.py` is the test panel. Photodiode sensing and the ROS 2 host side have not been started.
