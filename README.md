@@ -4,6 +4,8 @@ A small, mostly 3D-printed optical bench that couples a red laser into an optica
 
 ![Top-view bench layout](docs/images/bench_layout.svg)
 
+Parts list: [docs/bom](docs/bom/README.md) (source: `docs/bom/bom.csv`).
+
 ## How it works
 
 - **Light path:** a 635 nm laser passes two crossed polarizers (a brightness knob) and a beamsplitter that sends a slice to a reference photodiode. Two kinematic mirrors, M1 and M2, fold the beam in a Z. An 8 mm aspheric lens on a micrometer stage focuses it into a fixed FC fiber connector, and the fiber loops to an output photodiode.
