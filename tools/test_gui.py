@@ -479,8 +479,10 @@ class AxisRow:
         b = QPushButton("To 0")
         b.clicked.connect(lambda: app.send(f"GOTO {self.name} 0"))
         go.addWidget(b)
-        b = QPushButton("Set 0")
-        b.setToolTip("Call the current position 0; the soft limits move with it")
+        b = QPushButton("Reset to 0")
+        b.setToolTip("ZERO: call wherever the motor is now position 0 and save it to flash.\n"
+                     "Use it after turning an adjuster by hand. Nothing moves; the soft limits\n"
+                     "are relative to 0, so they re-centre on the new zero.")
         b.clicked.connect(self.zero)
         go.addWidget(b)
         grid.addLayout(go, row, 5)
@@ -513,8 +515,8 @@ class AxisRow:
         self.app.send(f"GOTO {self.name} {round(self.goto_box.value() * self.app.usteps_per_rev)}")
 
     def zero(self):
-        answer = QMessageBox.question(self.app, "Set zero", f"Call the current {self.name} position 0?\n"
-                                      "The soft limits move with it.")
+        answer = QMessageBox.question(self.app, "Reset position", f"Call the current {self.name} position 0?\n"
+                                      "The motor doesn't move, and the soft limits re-centre on the new zero.")
         if answer == QMessageBox.StandardButton.Yes:
             self.app.send(f"ZERO {self.name}")
             self.app.send("INFO")
@@ -759,6 +761,11 @@ class TestApp(QMainWindow):
         b = QPushButton("Disable all")
         b.clicked.connect(lambda: self.send("DISABLE ALL"))
         g.addWidget(b, 1, 4)
+        b = QPushButton("Reset all to 0")
+        b.setToolTip("ZERO ALL: call wherever every motor is now position 0 and save it to flash.\n"
+                     "Nothing moves; the soft limits re-centre on the new zeros.")
+        b.clicked.connect(self.zero_all)
+        g.addWidget(b, 0, 5, 2, 1)
         row.addWidget(s)
 
         st = QGroupBox("Step size (◀ ▶ and keys)")
@@ -1067,6 +1074,17 @@ class TestApp(QMainWindow):
         for i in list(self.jog_timers):
             self.stop_jog(i, send_stop=False)
         self.send("STOP ALL")
+
+    def zero_all(self):
+        answer = QMessageBox.question(self, "Reset all positions",
+                                      "Call the current position of all four motors 0?\n"
+                                      "Nothing moves, and the soft limits re-centre on the new zeros.")
+        if answer == QMessageBox.StandardButton.Yes:
+            for i in list(self.jog_timers):
+                self.stop_jog(i, send_stop=False)
+            self.send("HALT ALL")            # ZERO is refused while a motor is still ramping
+            self.send("ZERO ALL")
+            self.send("INFO")
 
     def toggle_laser(self):
         self.send(f"LASER {'OFF' if self.laser_on else 'ON'}")

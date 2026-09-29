@@ -16,7 +16,8 @@
 //                             JOG_TIMEOUT_MS (send it every ~100-200 ms)
 //   STOP [<ax>|ALL]           ramp down (no argument = all axes)
 //   HALT [<ax>|ALL]           stop on the current step, no ramp
-//   ZERO <ax>|ALL             call the current position 0 (limits stay relative to 0)
+//   ZERO <ax>|ALL             call the current position 0 and save it (limits stay
+//                             relative to 0); ZERO ALL also clears the power-loss warning
 //   SETPOS <ax> <pos>         redefine the current position
 //   LIMITS <ax>|ALL <lo> <hi> soft limits in microsteps, saved to flash
 //   SPEED <ax>|ALL <rpm>      cruise speed in adjuster turns per minute

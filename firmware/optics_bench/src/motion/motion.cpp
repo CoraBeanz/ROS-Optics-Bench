@@ -509,4 +509,6 @@ void savePositionsNow() { savePositions(); }
 
 bool positionsTrusted() { return bootTrusted; }
 
+void markPositionsTrusted() { bootTrusted = true; }
+
 }  // namespace motion

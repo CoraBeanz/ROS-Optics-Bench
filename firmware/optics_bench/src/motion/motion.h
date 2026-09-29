@@ -54,5 +54,6 @@ String slotMapReport();                       // which address answered in which
 
 void savePositionsNow();
 bool positionsTrusted();                      // false if power was lost mid-move
+void markPositionsTrusted();                  // after ZERO ALL: the operator re-referenced every axis
 
 }  // namespace motion

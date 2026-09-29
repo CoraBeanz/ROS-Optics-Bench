@@ -192,6 +192,7 @@ void handle(char *buf) {
     if (ax == -1) return;
     if ((ax == ALL && motion::anyMoving()) || (ax != ALL && motion::isMoving(ax))) { err("stop the motor first"); return; }
     forAxes(ax, [](int i) { motion::setPosition(i, 0); });
+    if (ax == ALL) motion::markPositionsTrusted();   // every axis re-referenced by the operator
     ok("ZERO");
     return;
   }
