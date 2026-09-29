@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "optics_bench") (type "KiCad") (uri "${KIPRJMOD}/../lib/optics_bench.pretty") (options "") (descr "Optics bench sockets"))
+)

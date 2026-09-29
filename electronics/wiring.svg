@@ -75,7 +75,7 @@
 <text xml:space="preserve" x="674" y="263" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 6 MS2</text>
 <text xml:space="preserve" x="752" y="263" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6d4c41" text-anchor="start" font-weight="bold">tie to GND</text>
 <text xml:space="preserve" x="674" y="282" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 7 DIAG</text>
-<text xml:space="preserve" x="752" y="282" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="752" y="282" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">Feather A2 (I34) (control board only)</text>
 <text xml:space="preserve" x="674" y="301" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 8 INDEX</text>
 <text xml:space="preserve" x="752" y="301" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
 <text xml:space="preserve" x="674" y="320" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 9 UART</text>
@@ -126,7 +126,7 @@
 <text xml:space="preserve" x="674" y="541" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 6 MS2</text>
 <text xml:space="preserve" x="752" y="541" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6d4c41" text-anchor="start" font-weight="bold">tie to GND</text>
 <text xml:space="preserve" x="674" y="560" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 7 DIAG</text>
-<text xml:space="preserve" x="752" y="560" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="752" y="560" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">Feather A3 (I39) (control board only)</text>
 <text xml:space="preserve" x="674" y="579" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 8 INDEX</text>
 <text xml:space="preserve" x="752" y="579" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
 <text xml:space="preserve" x="674" y="598" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 9 UART</text>
@@ -177,7 +177,7 @@
 <text xml:space="preserve" x="674" y="819" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 6 MS2</text>
 <text xml:space="preserve" x="752" y="819" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6d4c41" text-anchor="start" font-weight="bold">tie to 3V3</text>
 <text xml:space="preserve" x="674" y="838" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 7 DIAG</text>
-<text xml:space="preserve" x="752" y="838" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="752" y="838" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">Feather A4 (I36) (control board only)</text>
 <text xml:space="preserve" x="674" y="857" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 8 INDEX</text>
 <text xml:space="preserve" x="752" y="857" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
 <text xml:space="preserve" x="674" y="876" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 9 UART</text>
@@ -228,7 +228,7 @@
 <text xml:space="preserve" x="674" y="1097" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 6 MS2</text>
 <text xml:space="preserve" x="752" y="1097" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6d4c41" text-anchor="start" font-weight="bold">tie to 3V3</text>
 <text xml:space="preserve" x="674" y="1116" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 7 DIAG</text>
-<text xml:space="preserve" x="752" y="1116" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="752" y="1116" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">Feather 37 (I37) (control board only)</text>
 <text xml:space="preserve" x="674" y="1135" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 8 INDEX</text>
 <text xml:space="preserve" x="752" y="1135" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
 <text xml:space="preserve" x="674" y="1154" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 9 UART</text>

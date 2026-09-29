@@ -4,3 +4,7 @@
 *.stp  binary
 *.stl  binary
 *.3mf  binary
+# Fab outputs
+*.zip  binary
+*.png  binary
+*.pdf  binary

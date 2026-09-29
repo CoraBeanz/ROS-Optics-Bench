@@ -1,0 +1,10 @@
+refs,qty,description,part number,footprint
+C1,1,"1 nF C0G/NP0 50 V, 5 mm pitch (Cf)",generic,Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm
+C2,1,"100 nF X7R 50 V, 5 mm pitch",generic,Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm
+D1,1,Silicon PIN photodiode,Vishay BPW34,OptoDevice:Osram_DIL2_4.3x4.65mm_P5.08mm
+J1,1,"JST-XH 3-pin header, vertical",JST B3B-XH-A(LF)(SN),Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical
+R1,1,47 kOhm 1% 1/4 W axial (Rf),generic,Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal
+R2,1,100 Ohm 1/4 W axial,generic,Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal
+U1,1,"Dual op-amp, DIP-8",Microchip MCP6002-I/P,Package_DIP:DIP-8_W7.62mm
+U1,1,DIP-8 socket (optional),generic,
+J1 cable,1,"JST-XH 3-pin lead, wired 1:1 to control board J8 or J9",JST,

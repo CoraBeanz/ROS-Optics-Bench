@@ -1,5 +1,14 @@
 # Wiring: ESP32, motor drivers, laser and photodiodes
 
+The electronics can be built two ways:
+
+- **Control board (recommended).** A 2-layer carrier PCB takes the Feather, the four TMC2209 breakouts and the ADS1115 on sockets, and makes every connection below in copper. Cables go to the motors, laser, photodiode boards and 12 V supply. For the board, ordering and assembly, see [pcb/README.md](pcb/README.md). For every cable on the bench, see the system diagram below.
+- **Hand wiring** on perfboard, using the pin tables below. The nets are the same.
+
+![System wiring](system_wiring.svg)
+
+Pin-level wiring (the same connections the control board makes):
+
 ![Wiring diagram](wiring.svg)
 
 Parts:
@@ -35,6 +44,10 @@ The pins match `firmware/optics_bench/config.h`. If you change a pin there, chan
 | MI | 21 | Laser TTL |
 | SDA | 22 | ADS1115 SDA |
 | SCL | 20 | ADS1115 SCL |
+| A2 | 34 (input only) | M1X DIAG (control board; optional when hand-wiring) |
+| A3 | 39 (input only) | M1Y DIAG (control board) |
+| A4 | 36 (input only) | M2X DIAG (control board) |
+| 37 | 37 (input only) | M2Y DIAG (control board) |
 
 ## TMC2209 breakouts
 
@@ -48,7 +61,7 @@ Header pins in board order. Each driver's MS1/MS2 pins set its UART address.
 | 4 STEP | GPIO 4 (A5) | GPIO 27 | GPIO 32 | GPIO 26 (A0) |
 | 5 MS1 | GND | 3V3 | GND | 3V3 |
 | 6 MS2 | GND | GND | 3V3 | 3V3 |
-| 7 DIAG | not connected | not connected | not connected | not connected |
+| 7 DIAG | A2 (I34) | A3 (I39) | A4 (I36) | 37 (I37) |
 | 8 INDEX | not connected | not connected | not connected | not connected |
 | 9 UART | UART bus | UART bus | UART bus | UART bus |
 | 10 EN | GPIO 12 | GPIO 15 | GPIO 25 (A1) | GPIO 19 (MO) |
@@ -61,6 +74,10 @@ Screw terminals on each breakout:
 | - (GND) | 12 V supply minus |
 | 1A / 1B | One motor coil |
 | 2A / 2B | The other motor coil |
+
+DIAG goes high on a driver fault or stall. The firmware doesn't read it yet, and on a hand-wired build it can stay unconnected.
+
+On the control board the terminal row plugs in through a 6-pin male header in the breakout's terminal-block holes, and the motors plug into JST-XH connectors J1-J4 (pin 1 = 1A, 2 = 1B, 3 = 2A, 4 = 2B).
 
 ## Laser (Quarton VLM-635-32 LPT)
 
@@ -93,6 +110,8 @@ Two BPW34 photodiodes measure the light: the reference diode sits behind the bea
 A STEMMA QT cable between the ADS1115 and the Feather's STEMMA QT port carries VDD, GND, SDA and SCL in one plug. The Feather V2 powers that port from GPIO 2, which the ESP32 board package switches on at boot. Then only ADDR, A0 and A1 need wires.
 
 ### Photodiode board (build two)
+
+The [pd_amp PCB](pcb/README.md) is this circuit, plus a 100 Ohm resistor in series with the output that isolates the cable capacitance. Its J1 (1 = 3V3, 2 = VOUT, 3 = GND) plugs 1:1 into control board J8 (reference, A0) or J9 (output, A1). The table below covers a perfboard build.
 
 | Part | Connection |
 | --- | --- |
@@ -127,3 +146,14 @@ The diode works at zero bias, so the output sits at 0 V in the dark and rises as
 - **EN at power-up.** The breakout pulls EN low (a 20 kOhm resistor), so the drivers are enabled until the firmware boots and drives EN high. That pull-down also keeps GPIO 12 low at reset, which the ESP32 needs to boot.
 - **Motor coils.** To find a coil pair, measure resistance between the motor's wires. The two wires with a few ohms between them are one coil: put them on 1A/1B and the other pair on 2A/2B. If a motor turns the wrong way, set `invert` for that axis in `config.h` instead of rewiring.
 - Never plug or unplug a motor while the 12 V supply is on.
+
+## Host and bench instruments
+
+| From | To | Cable |
+| --- | --- | --- |
+| Jetson USB-A | Feather USB-C | USB data cable. Serial at 115200 baud, and it powers the Feather's 3V3 rail |
+| Jetson USB-A | Arducam OV9281 | USB (UVC camera, beam profiler for phase 1). No other wiring |
+| 12 V 2 A supply | Control board J6 (5.5 x 2.1 mm, centre +) or J5 (screw terminal) | One or the other |
+| Analog Discovery 3 | Control board J10 test header | Flywires: GND to pin 1, scope 1+ to pin 7 (PD_REF), scope 2+ to pin 8 (PD_OUT), DIO 0 to pin 5 (UART bus), DIO 1 to pin 6 (laser TTL), DIO 2/3 to pins 3/4 (SCL/SDA). Leave V+ and V- unconnected |
+
+The Analog Discovery's ground is the laptop's USB ground. Its GND flywire ties it to the bench ground at J10, and the scope's minus inputs go to GND too.

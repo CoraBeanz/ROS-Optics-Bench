@@ -16,10 +16,12 @@ whether it is already on hand, **TBD** = part not chosen yet.
 | E2 | Stepper driver | Adafruit TMC2209 breakout (product 6121) | 4 |  | Adafruit | Have | 1 | R_SENSE is 0.05 ohm. One shared UART bus; strap MS1/MS2 for addresses 0-3 |
 | E3 | UART bus resistor | 1 kOhm 1/4 W | 1 |  | Stock | Have | 1 | Feather TX to the driver UART bus |
 | E4 | Driver bulk capacitor | 100 uF 25 V electrolytic | 4 |  | Stock | Check | 1 | One across VM/GND at each driver |
-| E5 | Driver carrier | Perfboard + female headers | 1 | 8 | Amazon | Check | 1 |  |
+| E5 | Control board PCB | electronics/pcb/control_board, 100 x 100 mm 2-layer (5 pcs) | 1 | 5 | JLCPCB / PCBWay | To buy | 1 | Upload fab/control_board/control_board_gerbers.zip as-is. Parts list: fab/control_board/control_board_bom.csv |
+| E17 | Control board parts | 12 V input (PTC fuse, 1N5822, P6KE18CA, 470 uF), JST-XH plugs, sockets for the Feather, drivers and ADS1115 | 1 | 15 | DigiKey / LCSC | To buy | 1 | All through-hole; see control_board_bom.csv. Replaces the perfboard carrier |
+| E18 | Photodiode board PCB | electronics/pcb/pd_amp, 34 x 25 mm 2-layer (5 pcs) | 1 | 2 | JLCPCB / PCBWay | To buy | 2 | Build two; replaces the photodiode perfboards (E15). Adds a 100 Ohm output resistor per board |
 | E6 | Motor supply | 12 V 2 A DC | 1 | 8 | Amazon | Check | 1 | Skip if using a bench supply. Drivers only answer UART with 12 V on |
 | E7 | Laser | Quarton VLM-635-32 LPT 635 nm module (Amazon B07QCTMMVT) | 1 |  | Amazon | Have | 1 | TTL high = on from GPIO 21. Measured beam about 7 x 3 mm |
-| E8 | ADC | Adafruit ADS1115 16-bit I2C breakout (product 1085) | 1 | 15 | Adafruit | Check | 2 | Address 0x48 (ADDR to GND). Plugs into the Feather STEMMA QT port. Adafruit ADS1X15 library |
+| E8 | ADC | Adafruit ADS1115 16-bit I2C breakout (product 1085) | 1 | 15 | Adafruit | Check | 2 | Address 0x48 (ADDR to GND). Plugs into control board socket A2 (or the Feather STEMMA QT port when hand-wired). Adafruit ADS1X15 library |
 | E9 | Photodiode | BPW34 Si PIN (5-pack) | 1 | 7 | Amazon / DigiKey | Check | 2 | One on each photodiode board: reference (ADS1115 A0) and fiber output (A1) |
 | E10 | TIA op-amp | MCP6002 dual op-amp, DIP-8 | 2 | 0.5 | DigiKey | Check | 2 | One per photodiode board; half B unused, wired as a grounded follower |
 | E11 | Hookup | Wire, headers, Dupont/JST connectors | 1 |  | Stock | Have | 1 |  |
@@ -80,7 +82,7 @@ whether it is already on hand, **TBD** = part not chosen yet.
 | H1 | Host computer | NVIDIA Jetson | 1 |  |  | Check | 1 | Camera + optimizer (ROS 2) |
 | H2 | Bench instrument | Analog Discovery 3 | 1 |  |  | Check | 2 | Bench checks of the TIA and ADC |
 
-**Estimated spend on To buy lines: $196** (excludes Check and TBD lines).
+**Estimated spend on To buy lines: $218** (excludes Check and TBD lines).
 
 ## Alternate: NEMA 11 build
 

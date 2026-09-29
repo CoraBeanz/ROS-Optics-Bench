@@ -13,3 +13,11 @@ __pycache__/
 host/ros2_ws/build/
 host/ros2_ws/install/
 host/ros2_ws/log/
+
+# KiCad local state and intermediates (electronics/pcb/gen/build.py regenerates the .net)
+*.kicad_prl
+*-backups/
+fp-info-cache
+_autosave-*
+~*.lck
+electronics/pcb/*/*.net
