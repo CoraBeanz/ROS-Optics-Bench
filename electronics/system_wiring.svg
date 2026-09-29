@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1180" viewBox="0 0 1500 1180">
+<rect width="1500" height="1180" fill="#ffffff"/>
+<text xml:space="preserve" x="40" y="42" font-family="Helvetica, Arial, sans-serif" font-size="22" fill="#212121" text-anchor="start" font-weight="bold">Optics bench system wiring: control board, host, motors, laser, photodiodes, test gear</text>
+<text xml:space="preserve" x="40" y="66" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#757575" text-anchor="start" font-weight="normal">Connector numbers are the control board's (electronics/pcb/control_board) and the photodiode board's (electronics/pcb/pd_amp). All grounds are common through the control board.</text>
+<rect x="470" y="330" width="580" height="420" rx="10" fill="#e8f5e9" stroke="#424242" stroke-width="2"/>
+<text xml:space="preserve" x="760.0" y="360" font-family="Helvetica, Arial, sans-serif" font-size="17" fill="#212121" text-anchor="middle" font-weight="bold">Control board (100 x 100 mm, 2 layers)</text>
+<text xml:space="preserve" x="760.0" y="380" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="middle" font-weight="normal">electronics/pcb/control_board</text>
+<text xml:space="preserve" x="580" y="426" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#212121" text-anchor="start" font-weight="bold">A1  ESP32 Feather V2 (plug-in)</text>
+<text xml:space="preserve" x="580" y="444" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">USB-C at the board's top-left edge</text>
+<text xml:space="preserve" x="580" y="478" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#212121" text-anchor="start" font-weight="bold">U1-U4  TMC2209 breakouts (plug-in)</text>
+<text xml:space="preserve" x="580" y="496" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">UART addresses 0-3 set by the board</text>
+<text xml:space="preserve" x="580" y="530" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#212121" text-anchor="start" font-weight="bold">A2  ADS1115 (plug-in), address 0x48</text>
+<text xml:space="preserve" x="580" y="548" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">A0 = PD reference, A1 = PD output</text>
+<text xml:space="preserve" x="580" y="582" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#212121" text-anchor="start" font-weight="bold">12 V input: PTC fuse, Schottky, TVS, 470 uF</text>
+<text xml:space="preserve" x="580" y="600" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">use J5 or J6, not both</text>
+<circle cx="550" cy="150" r="34" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
+<text xml:space="preserve" x="550" y="148" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="middle" font-weight="bold">NEMA 8</text>
+<text xml:space="preserve" x="550" y="164" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#455a64" text-anchor="middle" font-weight="bold">M1X</text>
+<text xml:space="preserve" x="550" y="104" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="middle" font-weight="normal">mirror M1, X adjuster</text>
+<polyline points="541,184 541,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="547,184 547,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="553,184 553,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="559,184 559,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="541" y="323" width="18" height="14" rx="2" fill="#ffffff" stroke="#455a64" stroke-width="2"/>
+<text xml:space="preserve" x="564" y="318" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="start" font-weight="bold">J1</text>
+<circle cx="690" cy="150" r="34" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
+<text xml:space="preserve" x="690" y="148" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="middle" font-weight="bold">NEMA 8</text>
+<text xml:space="preserve" x="690" y="164" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#455a64" text-anchor="middle" font-weight="bold">M1Y</text>
+<text xml:space="preserve" x="690" y="104" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="middle" font-weight="normal">mirror M1, Y adjuster</text>
+<polyline points="681,184 681,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="687,184 687,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="693,184 693,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="699,184 699,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="681" y="323" width="18" height="14" rx="2" fill="#ffffff" stroke="#455a64" stroke-width="2"/>
+<text xml:space="preserve" x="704" y="318" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="start" font-weight="bold">J2</text>
+<circle cx="830" cy="150" r="34" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
+<text xml:space="preserve" x="830" y="148" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="middle" font-weight="bold">NEMA 8</text>
+<text xml:space="preserve" x="830" y="164" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#455a64" text-anchor="middle" font-weight="bold">M2X</text>
+<text xml:space="preserve" x="830" y="104" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="middle" font-weight="normal">mirror M2, X adjuster</text>
+<polyline points="821,184 821,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="827,184 827,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="833,184 833,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="839,184 839,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="821" y="323" width="18" height="14" rx="2" fill="#ffffff" stroke="#455a64" stroke-width="2"/>
+<text xml:space="preserve" x="844" y="318" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="start" font-weight="bold">J3</text>
+<circle cx="970" cy="150" r="34" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
+<text xml:space="preserve" x="970" y="148" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="middle" font-weight="bold">NEMA 8</text>
+<text xml:space="preserve" x="970" y="164" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#455a64" text-anchor="middle" font-weight="bold">M2Y</text>
+<text xml:space="preserve" x="970" y="104" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="middle" font-weight="normal">mirror M2, Y adjuster</text>
+<polyline points="961,184 961,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="967,184 967,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="973,184 973,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="979,184 979,318" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="961" y="323" width="18" height="14" rx="2" fill="#ffffff" stroke="#455a64" stroke-width="2"/>
+<text xml:space="preserve" x="984" y="318" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="start" font-weight="bold">J4</text>
+<text xml:space="preserve" x="1070" y="130" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#455a64" text-anchor="start" font-weight="bold">Motor plugs J1-J4 (JST-XH 4-pin)</text>
+<text xml:space="preserve" x="1070" y="152" font-family="Menlo, Consolas, monospace" font-size="12" fill="#455a64" text-anchor="start" font-weight="normal">pin 1  1A  } coil A</text>
+<text xml:space="preserve" x="1070" y="170" font-family="Menlo, Consolas, monospace" font-size="12" fill="#455a64" text-anchor="start" font-weight="normal">pin 2  1B  }</text>
+<text xml:space="preserve" x="1070" y="188" font-family="Menlo, Consolas, monospace" font-size="12" fill="#455a64" text-anchor="start" font-weight="normal">pin 3  2A  } coil B</text>
+<text xml:space="preserve" x="1070" y="206" font-family="Menlo, Consolas, monospace" font-size="12" fill="#455a64" text-anchor="start" font-weight="normal">pin 4  2B  }</text>
+<text xml:space="preserve" x="1070" y="232" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">Find a coil with an ohmmeter (a few ohms between its two wires).</text>
+<text xml:space="preserve" x="1070" y="248" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">Wrong direction? Set invert in config.h instead of rewiring.</text>
+<text xml:space="preserve" x="1070" y="264" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">Plug and unplug motors only with 12 V off.</text>
+<rect x="40" y="330" width="300" height="170" rx="6" fill="#e3f2fd" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="190" y="360" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="middle" font-weight="bold">NVIDIA Jetson (ROS 2 host)</text>
+<text xml:space="preserve" x="190" y="380" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="middle" font-weight="normal">optimizer, camera, experiment control</text>
+<text xml:space="preserve" x="60" y="412" font-family="Menlo, Consolas, monospace" font-size="12" fill="#1565c0" text-anchor="start" font-weight="normal">USB-A  -&gt; Feather USB-C</text>
+<text xml:space="preserve" x="60" y="432" font-family="Menlo, Consolas, monospace" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">        serial 115200 baud,</text>
+<text xml:space="preserve" x="60" y="450" font-family="Menlo, Consolas, monospace" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">        also powers the Feather</text>
+<text xml:space="preserve" x="60" y="478" font-family="Menlo, Consolas, monospace" font-size="12" fill="#1565c0" text-anchor="start" font-weight="normal">USB-A  -&gt; camera (USB 2.0)</text>
+<polyline points="340,410 458,410" fill="none" stroke="#1565c0" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="461" y="403" width="18" height="14" rx="2" fill="#ffffff" stroke="#1565c0" stroke-width="2"/>
+<text xml:space="preserve" x="486" y="415" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1565c0" text-anchor="start" font-weight="bold">USB-C (A1)</text>
+<text xml:space="preserve" x="345" y="386" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1565c0" text-anchor="start" font-weight="bold">USB-A to USB-C data cable</text>
+<rect x="40" y="600" width="300" height="120" rx="6" fill="#e3f2fd" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="190" y="630" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="middle" font-weight="bold">Arducam OV9281 (UVC)</text>
+<text xml:space="preserve" x="190" y="650" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="middle" font-weight="normal">global-shutter beam profiler, phase 1</text>
+<text xml:space="preserve" x="190" y="668" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="middle" font-weight="normal">M12 lens removed; bare sensor in the beam</text>
+<text xml:space="preserve" x="190" y="700" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1565c0" text-anchor="middle" font-weight="bold">USB only, no control-board wiring</text>
+<polyline points="190,500 190,600" fill="none" stroke="#1565c0" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<text xml:space="preserve" x="200" y="556" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1565c0" text-anchor="start" font-weight="bold">USB cable</text>
+<rect x="1190" y="520" width="270" height="150" rx="6" fill="#fce4ec" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1325" y="550" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="middle" font-weight="bold">12 V 2 A DC supply</text>
+<text xml:space="preserve" x="1325" y="570" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="middle" font-weight="normal">motor power; logic runs from USB</text>
+<text xml:space="preserve" x="1325" y="600" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#ad1457" text-anchor="middle" font-weight="bold">barrel plug 5.5 x 2.1 mm, centre +</text>
+<text xml:space="preserve" x="1325" y="618" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#ad1457" text-anchor="middle" font-weight="normal">or bare leads into the screw terminal</text>
+<text xml:space="preserve" x="1325" y="648" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="middle" font-weight="normal">Drivers answer on UART only with 12 V on</text>
+<polyline points="1190,600 1062,600" fill="none" stroke="#ad1457" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="1041" y="593" width="18" height="14" rx="2" fill="#ffffff" stroke="#ad1457" stroke-width="2"/>
+<text xml:space="preserve" x="1034" y="605" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#ad1457" text-anchor="end" font-weight="bold">J6</text>
+<polyline points="1190,560 1120,560 1120,540 1062,540" fill="none" stroke="#ad1457" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="8 5"/>
+<rect x="1041" y="533" width="18" height="14" rx="2" fill="#ffffff" stroke="#ad1457" stroke-width="2"/>
+<text xml:space="preserve" x="1034" y="545" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#ad1457" text-anchor="end" font-weight="bold">J5 (+ / -)</text>
+<text xml:space="preserve" x="1075" y="700" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#ad1457" text-anchor="start" font-weight="normal">J5 or J6 (reverse-polarity protected)</text>
+<rect x="40" y="880" width="330" height="200" rx="6" fill="#fff3e0" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="205" y="908" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="middle" font-weight="bold">Quarton VLM-635-32 LPT laser</text>
+<text xml:space="preserve" x="205" y="928" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="middle" font-weight="normal">635 nm, &lt; 1 mW, 3-6 V, &lt; 40 mA</text>
+<text xml:space="preserve" x="60" y="962" font-family="Menlo, Consolas, monospace" font-size="12" fill="#c62828" text-anchor="start" font-weight="bold">J7-1  +V (red)     3V3</text>
+<text xml:space="preserve" x="60" y="984" font-family="Menlo, Consolas, monospace" font-size="12" fill="#e65100" text-anchor="start" font-weight="bold">J7-2  TTL          GPIO 21, high = on</text>
+<text xml:space="preserve" x="60" y="1006" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold">J7-3  GND (black)  GND</text>
+<text xml:space="preserve" x="60" y="1040" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">Check the module label for wire colours.</text>
+<polyline points="205,880 205,820 530,820 530,762" fill="none" stroke="#e65100" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="521" y="743" width="18" height="14" rx="2" fill="#ffffff" stroke="#e65100" stroke-width="2"/>
+<text xml:space="preserve" x="530" y="736" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#e65100" text-anchor="middle" font-weight="bold">J7 laser</text>
+<rect x="400" y="880" width="240" height="200" rx="6" fill="#e0f2f1" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="520" y="908" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="middle" font-weight="bold">Reference photodiode board</text>
+<text xml:space="preserve" x="520" y="926" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="middle" font-weight="normal">electronics/pcb/pd_amp</text>
+<text xml:space="preserve" x="520" y="944" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="middle" font-weight="normal">behind the beamsplitter's reflected port</text>
+<text xml:space="preserve" x="416" y="976" font-family="Menlo, Consolas, monospace" font-size="12" fill="#c62828" text-anchor="start" font-weight="bold">J1-1 3V3  -&gt; J8-1</text>
+<text xml:space="preserve" x="416" y="996" font-family="Menlo, Consolas, monospace" font-size="12" fill="#00695c" text-anchor="start" font-weight="bold">J1-2 OUT  -&gt; J8-2 (A0)</text>
+<text xml:space="preserve" x="416" y="1016" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold">J1-3 GND  -&gt; J8-3</text>
+<text xml:space="preserve" x="416" y="1046" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">3-wire JST-XH lead, 1:1, twisted</text>
+<text xml:space="preserve" x="416" y="1062" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">BPW34 + MCP6002, 47k || 1 nF</text>
+<polyline points="520,880 520,840 660,840 660,762" fill="none" stroke="#00695c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="651" y="743" width="18" height="14" rx="2" fill="#ffffff" stroke="#00695c" stroke-width="2"/>
+<text xml:space="preserve" x="660" y="736" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00695c" text-anchor="middle" font-weight="bold">J8 PD ref</text>
+<rect x="660" y="880" width="240" height="200" rx="6" fill="#e0f2f1" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="780" y="908" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="middle" font-weight="bold">Output photodiode board</text>
+<text xml:space="preserve" x="780" y="926" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="middle" font-weight="normal">electronics/pcb/pd_amp</text>
+<text xml:space="preserve" x="780" y="944" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="middle" font-weight="normal">behind the fiber output</text>
+<text xml:space="preserve" x="676" y="976" font-family="Menlo, Consolas, monospace" font-size="12" fill="#c62828" text-anchor="start" font-weight="bold">J1-1 3V3  -&gt; J9-1</text>
+<text xml:space="preserve" x="676" y="996" font-family="Menlo, Consolas, monospace" font-size="12" fill="#00695c" text-anchor="start" font-weight="bold">J1-2 OUT  -&gt; J9-2 (A1)</text>
+<text xml:space="preserve" x="676" y="1016" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold">J1-3 GND  -&gt; J9-3</text>
+<text xml:space="preserve" x="676" y="1046" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">3-wire JST-XH lead, 1:1, twisted</text>
+<text xml:space="preserve" x="676" y="1062" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">BPW34 + MCP6002, 47k || 1 nF</text>
+<polyline points="780,880 780,860 790,860 790,762" fill="none" stroke="#00695c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="781" y="743" width="18" height="14" rx="2" fill="#ffffff" stroke="#00695c" stroke-width="2"/>
+<text xml:space="preserve" x="790" y="736" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00695c" text-anchor="middle" font-weight="bold">J9 PD out</text>
+<rect x="940" y="880" width="520" height="270" rx="6" fill="#f1f8e9" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1200" y="908" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="middle" font-weight="bold">Analog Discovery 3 (bench checks)</text>
+<text xml:space="preserve" x="1200" y="926" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="middle" font-weight="normal">flywires onto the J10 test header; USB to a laptop</text>
+<text xml:space="preserve" x="960" y="960" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold">GND (black)     -&gt; J10-1 GND</text>
+<text xml:space="preserve" x="960" y="982" font-family="Menlo, Consolas, monospace" font-size="12" fill="#00695c" text-anchor="start" font-weight="bold">Scope 1+ / 1-   -&gt; J10-7 PD_REF / J10-1 GND</text>
+<text xml:space="preserve" x="960" y="1004" font-family="Menlo, Consolas, monospace" font-size="12" fill="#00695c" text-anchor="start" font-weight="bold">Scope 2+ / 2-   -&gt; J10-8 PD_OUT / J10-1 GND</text>
+<text xml:space="preserve" x="960" y="1026" font-family="Menlo, Consolas, monospace" font-size="12" fill="#6a1b9a" text-anchor="start" font-weight="bold">DIO 0           -&gt; J10-5 driver UART bus (115200 8N1)</text>
+<text xml:space="preserve" x="960" y="1048" font-family="Menlo, Consolas, monospace" font-size="12" fill="#e65100" text-anchor="start" font-weight="bold">DIO 1           -&gt; J10-6 laser TTL</text>
+<text xml:space="preserve" x="960" y="1070" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5e35b1" text-anchor="start" font-weight="bold">DIO 2 / DIO 3   -&gt; J10-3 SCL / J10-4 SDA (I2C decoder)</text>
+<text xml:space="preserve" x="960" y="1092" font-family="Menlo, Consolas, monospace" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold">W1 (optional)   -&gt; J10-9 ADS1115 A2, spare input for ADC checks</text>
+<text xml:space="preserve" x="960" y="1114" font-family="Menlo, Consolas, monospace" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">V+ / V-         -&gt; leave unconnected (board has its own supplies)</text>
+<text xml:space="preserve" x="960" y="1142" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">J10 pinout: 1 GND, 2 3V3, 3 SCL, 4 SDA, 5 UART, 6 LASER, 7 PD_REF, 8 PD_OUT, 9 A2, 10 A3</text>
+<polyline points="1200,880 1200,800 990,800 990,762" fill="none" stroke="#2e7d32" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="981" y="743" width="18" height="14" rx="2" fill="#ffffff" stroke="#2e7d32" stroke-width="2"/>
+<text xml:space="preserve" x="990" y="736" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#2e7d32" text-anchor="middle" font-weight="bold">J10 test</text>
+</svg>

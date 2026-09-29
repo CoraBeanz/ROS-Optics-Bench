@@ -106,6 +106,7 @@ drivers = [
     ("M2X", 2, "GND", "3V3", "32 (GPIO 32)", "14 (GPIO 14)", "A1 (GPIO 25)", "Mirror M2, X adjuster"),
     ("M2Y", 3, "3V3", "3V3", "A0 (GPIO 26)", "SCK (GPIO 5)", "MO (GPIO 19)", "Mirror M2, Y adjuster"),
 ]
+DIAG_PAD = {"M1X": "A2 (I34)", "M1Y": "A3 (I39)", "M2X": "A4 (I36)", "M2Y": "37 (I37)"}
 BUS_X = 590
 VM_X, GND_X = 1370, 1395
 uart_rows = []
@@ -117,7 +118,8 @@ for d, (name, addr, ms1, ms2, step, dirp, en, role) in enumerate(drivers):
     rows = [
         ("VDD", "Feather 3V3", "pwr"), ("GND", "Feather GND", "gnd"), ("DIR", f"Feather {dirp}", "dir"),
         ("STEP", f"Feather {step}", "step"), ("MS1", f"tie to {ms1}", "strap"), ("MS2", f"tie to {ms2}", "strap"),
-        ("DIAG", "not connected", "mute"), ("INDEX", "not connected", "mute"), ("UART", "UART bus", "uart"),
+        ("DIAG", f"Feather {DIAG_PAD[name]} (control board only)", "mute"), ("INDEX", "not connected", "mute"),
+        ("UART", "UART bus", "uart"),
         ("EN", f"Feather {en}", "en"),
     ]
     for r, (pin, dest, col) in enumerate(rows):

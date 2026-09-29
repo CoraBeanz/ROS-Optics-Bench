@@ -38,7 +38,8 @@ cad/                   Mechanical CAD (Onshape STEP exports)
   print/               STL / 3MF files ready to slice
   vendor/              Purchased-part models (motors, mounts, optics)
 docs/                  Notes, drawings, bench layout, test results
-electronics/           Wiring diagrams, schematics, pinouts
+electronics/           Wiring diagrams, pinouts
+  pcb/                 KiCad projects (control board, photodiode amp), generators, fab outputs
 firmware/optics_bench/ Arduino IDE sketch for the ESP32
   optics_bench.ino     setup() and loop()
   config.h             Pin map, bus addresses, motor limits
@@ -65,6 +66,8 @@ Code in `src/` is compiled with the sketch automatically. Record any library add
 | Adafruit ADS1X15 | 2.6.2 | ADS1115 photodiode ADC over I2C (pulls in Adafruit BusIO) |
 
 The firmware was last built with the esp32 boards package 3.3.7.
+
+The control board and photodiode amplifier PCBs (KiCad 10, with Gerbers ready to order) are in [electronics/pcb](electronics/pcb/README.md), and every cable on the bench is in [electronics/system_wiring.svg](electronics/system_wiring.svg).
 
 Every pin is set in `firmware/optics_bench/config.h`. The wiring diagram and full pin table for the Feather ESP32 V2, the four Adafruit TMC2209 breakouts, the laser, the ADS1115 and the two photodiode amplifier boards are in [electronics/wiring.md](electronics/wiring.md).
 

@@ -62,6 +62,9 @@ constexpr AxisPins AXIS_PINS[NUM_AXES] = {
   { "M2Y",  26,   5, 19,  3,  false },   // pads A0, SCK, MO
 };
 
+// On the control board (electronics/pcb) each driver's DIAG output also reaches an
+// input-only pin: M1X GPIO 34 (A2), M1Y 39 (A3), M2X 36 (A4), M2Y 37. Not used yet.
+
 // ── Laser ───────────────────────────────────────────────────────────────────
 // Quarton VLM-635-32 LPT: 3-6 V supply (< 40 mA, from the Feather's 3V3),
 // TTL input high = on, 1-20 mA, so a GPIO drives it directly.
