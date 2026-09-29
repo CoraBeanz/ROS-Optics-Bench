@@ -22,8 +22,10 @@
 //   SPEED <ax>|ALL <rpm>      cruise speed in adjuster turns per minute
 //   ACCEL <ax>|ALL <rpm/s>    acceleration
 //   CURRENT <ax>|ALL <mA>     RMS run current (motors must be still)
-//   ENABLE <ax>|ALL           energise (moves also energise automatically)
-//   DISABLE <ax>|ALL          release the motor (halts it first)
+//   ENABLE <ax>|ALL           energise and hold until DISABLE. Without it, a move
+//                             energises its motor and releases it RELEASE_DELAY_MS
+//                             after it stops (config.h AUTO_RELEASE)
+//   DISABLE <ax>|ALL          release the motor (halts it first), ends an ENABLE hold
 //   DRV <ax>                  TMC2209 diagnostics (motors must be still)
 //   REPROBE <ax>|ALL          re-run the driver config (motors must be still)
 //   SAVE                      write positions to flash now

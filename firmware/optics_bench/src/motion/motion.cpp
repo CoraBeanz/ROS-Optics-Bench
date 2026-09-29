@@ -40,6 +40,8 @@ struct Axis {
   bool     uartOk = false, cfgOk = false;
   uint8_t  ver = 0;
   bool     energised = false;
+  bool     held = false;       // ENABLE: stay energised until DISABLE, no auto-release
+  uint32_t stillSince = 0;     // last time the axis was stepping or settling
   bool     settling = false; // enable settle in progress, stepping held off
   uint32_t settleStart = 0;
   bool     jogging = false;
@@ -184,6 +186,13 @@ void energise(Axis &a) {
   a.energised = true;
   a.settling = true;                         // StealthChop standstill calibration
   a.settleStart = millis();
+  a.stillSince = a.settleStart;
+}
+
+void release(Axis &a) {
+  digitalWrite(a.pins->en, HIGH);
+  a.energised = false;
+  a.settling = false;
 }
 
 MoveResult startMove(int i, long tgt, bool jogMove) {
@@ -305,6 +314,7 @@ void update() {
     if (a.settling) {
       if (millis() - a.settleStart < ENABLE_SETTLE_MS) {
         moving |= a.stp->distanceToGo() != 0;   // waiting out the enable settle
+        a.stillSince = millis();
         continue;
       }
       a.settling = false;
@@ -313,7 +323,11 @@ void update() {
     if (running) {
       moving = true;
       a.wasRunning = true;
-    } else if (a.wasRunning) {
+      a.stillSince = millis();
+    } else if (AUTO_RELEASE && a.energised && !a.held && millis() - a.stillSince >= RELEASE_DELAY_MS) {
+      release(a);                           // still long enough: coils off until the next move
+    }
+    if (!running && a.wasRunning) {
       a.wasRunning = false;
       a.jogging = false;
       long p = a.stp->currentPosition();
@@ -436,14 +450,16 @@ bool setCurrent(int i, uint16_t mA) {
 uint16_t current(int i) { return valid(i) ? axes[i].currentMa : 0; }
 
 void enable(int i) {
-  if (valid(i)) energise(axes[i]);
+  if (!valid(i)) return;
+  axes[i].held = true;
+  energise(axes[i]);
 }
 
 void disable(int i) {
   if (!valid(i)) return;
   halt(i);
-  digitalWrite(axes[i].pins->en, HIGH);
-  axes[i].energised = false;
+  axes[i].held = false;
+  release(axes[i]);
 }
 
 bool enabled(int i) { return valid(i) && axes[i].energised; }

@@ -117,6 +117,16 @@ constexpr AxisPins AXIS_PINS[NUM_AXES] = {
 
 #define ENABLE_SETTLE_MS 180      // StealthChop standstill calibration after EN low
 
+// Coil release, as in the featherv2 sketch: a motor is energised for a move
+// and released (EN high, no coil current) once it has been still for
+// RELEASE_DELAY_MS, so the motors don't sit warm between moves. The 100 TPI
+// adjuster screws don't back-drive, so the mirror stays put. The delay keeps
+// a burst of nudges from paying the enable settle on every one. ENABLE holds
+// a motor energised until DISABLE. Set AUTO_RELEASE false to keep motors
+// energised (at hold current) after every move instead.
+#define AUTO_RELEASE     true
+#define RELEASE_DELAY_MS 500
+
 // ── Soft limits ─────────────────────────────────────────────────────────────
 // The CAD check found only ~4 turns of hex engagement one way and ~8 the
 // other before the bit bottoms out or pulls out of the adjuster. Limits are

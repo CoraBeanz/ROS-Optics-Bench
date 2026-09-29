@@ -151,6 +151,8 @@ class SimLink:
         self.acc = [120.0] * n
         self.ma = [350] * n
         self.en = [False] * n
+        self.held = [False] * n              # ENABLE: no auto-release until DISABLE
+        self.still_since = [0.0] * n
         self.jog_deadline = [None] * n
         self.limited = [False] * n
         self.laser = False
@@ -172,7 +174,10 @@ class SimLink:
                         self.tgt[i] = round(self.pos[i])
                     d = self.tgt[i] - self.pos[i]
                     if d == 0:
+                        if self.en[i] and not self.held[i] and now - self.still_since[i] >= 0.5:
+                            self.en[i] = False      # firmware AUTO_RELEASE after RELEASE_DELAY_MS
                         continue
+                    self.still_since[i] = now
                     step = self.rpm[i] / 60 * self.USTEPS_PER_REV * dt
                     self.pos[i] = self.tgt[i] if abs(d) <= step else self.pos[i] + step * (1 if d > 0 else -1)
                     if self.pos[i] == self.tgt[i]:
@@ -259,6 +264,7 @@ class SimLink:
         c = max(self.lo[i], min(self.hi[i], target))
         self.limited[i] = c != target or jog
         self.en[i] = True
+        self.still_since[i] = time.monotonic()
         self.tgt[i] = c
         return c != target
 
@@ -344,7 +350,8 @@ class SimLink:
             return f"OK {c}={v}"
         if c in ("ENABLE", "DISABLE"):
             for i in self._axis(a[0], True):
-                self.en[i] = c == "ENABLE"
+                self.en[i] = self.held[i] = c == "ENABLE"
+                self.still_since[i] = time.monotonic()
                 if c == "DISABLE":
                     self.tgt[i] = round(self.pos[i])
             return f"OK {c}"
@@ -493,7 +500,8 @@ class AxisRow:
         grid.addLayout(lim, row, 6)
 
         self.en_chk = QCheckBox()
-        self.en_chk.setToolTip("Driver enabled (coils powered)")
+        self.en_chk.setToolTip("Coils powered. Moves power a motor and release it 0.5 s after it stops;\n"
+                               "ticking this (ENABLE) holds it powered until you untick it (DISABLE).")
         self.en_chk.clicked.connect(self.toggle_enable)
         grid.addWidget(self.en_chk, row, 7, alignment=Qt.AlignmentFlag.AlignCenter)
         b = QPushButton("Diag")
