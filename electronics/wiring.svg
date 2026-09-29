@@ -1,0 +1,445 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1420" height="2064" viewBox="0 0 1420 2064">
+<rect width="1420" height="2064" fill="#ffffff"/>
+<text xml:space="preserve" x="40" y="42" font-family="Helvetica, Arial, sans-serif" font-size="22" fill="#212121" text-anchor="start" font-weight="bold">Optics bench wiring: Feather ESP32 V2, 4x Adafruit TMC2209, Quarton laser, ADS1115 and photodiodes</text>
+<text xml:space="preserve" x="40" y="66" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#757575" text-anchor="start" font-weight="normal">Matches firmware/optics_bench/config.h. Same-named labels are connected. All grounds (12 V supply, Feather, every breakout) are tied together.</text>
+<rect x="40" y="100" width="240" height="746" rx="6" fill="#e8eaf6" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="160.0" y="126" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="middle" font-weight="bold">Adafruit ESP32 Feather V2</text>
+<text xml:space="preserve" x="160.0" y="144" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="middle" font-weight="normal">(product 5400)  USB-C to PC</text>
+<text xml:space="preserve" x="268" y="176" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">3V3</text>
+<line x1="280" y1="172" x2="320" y2="172" stroke="#c62828" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="176" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#c62828" text-anchor="start" font-weight="bold">3V3 rail (drivers, MS straps, laser, ADC, TIAs)</text>
+<text xml:space="preserve" x="268" y="210" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">GND</text>
+<line x1="280" y1="206" x2="320" y2="206" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="210" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">GND (common)</text>
+<text xml:space="preserve" x="268" y="244" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">RX  (GPIO 7)</text>
+<text xml:space="preserve" x="268" y="278" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">TX  (GPIO 8)</text>
+<text xml:space="preserve" x="268" y="312" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">A5  (GPIO 4)</text>
+<line x1="280" y1="308" x2="320" y2="308" stroke="#1565c0" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="312" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#1565c0" text-anchor="start" font-weight="bold">M1X STEP</text>
+<text xml:space="preserve" x="268" y="346" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">13</text>
+<line x1="280" y1="342" x2="320" y2="342" stroke="#00838f" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="346" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#00838f" text-anchor="start" font-weight="bold">M1X DIR</text>
+<text xml:space="preserve" x="268" y="380" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">12</text>
+<line x1="280" y1="376" x2="320" y2="376" stroke="#2e7d32" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="380" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#2e7d32" text-anchor="start" font-weight="bold">M1X EN</text>
+<text xml:space="preserve" x="268" y="414" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">27</text>
+<line x1="280" y1="410" x2="320" y2="410" stroke="#1565c0" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="414" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#1565c0" text-anchor="start" font-weight="bold">M1Y STEP</text>
+<text xml:space="preserve" x="268" y="448" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">33</text>
+<line x1="280" y1="444" x2="320" y2="444" stroke="#00838f" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="448" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#00838f" text-anchor="start" font-weight="bold">M1Y DIR</text>
+<text xml:space="preserve" x="268" y="482" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">15</text>
+<line x1="280" y1="478" x2="320" y2="478" stroke="#2e7d32" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="482" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#2e7d32" text-anchor="start" font-weight="bold">M1Y EN</text>
+<text xml:space="preserve" x="268" y="516" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">32</text>
+<line x1="280" y1="512" x2="320" y2="512" stroke="#1565c0" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="516" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#1565c0" text-anchor="start" font-weight="bold">M2X STEP</text>
+<text xml:space="preserve" x="268" y="550" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">14</text>
+<line x1="280" y1="546" x2="320" y2="546" stroke="#00838f" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="550" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#00838f" text-anchor="start" font-weight="bold">M2X DIR</text>
+<text xml:space="preserve" x="268" y="584" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">A1  (GPIO 25)</text>
+<line x1="280" y1="580" x2="320" y2="580" stroke="#2e7d32" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="584" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#2e7d32" text-anchor="start" font-weight="bold">M2X EN</text>
+<text xml:space="preserve" x="268" y="618" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">A0  (GPIO 26)</text>
+<line x1="280" y1="614" x2="320" y2="614" stroke="#1565c0" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="618" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#1565c0" text-anchor="start" font-weight="bold">M2Y STEP</text>
+<text xml:space="preserve" x="268" y="652" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">SCK  (GPIO 5)</text>
+<line x1="280" y1="648" x2="320" y2="648" stroke="#00838f" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="652" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#00838f" text-anchor="start" font-weight="bold">M2Y DIR</text>
+<text xml:space="preserve" x="268" y="686" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">MO  (GPIO 19)</text>
+<line x1="280" y1="682" x2="320" y2="682" stroke="#2e7d32" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="686" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#2e7d32" text-anchor="start" font-weight="bold">M2Y EN</text>
+<text xml:space="preserve" x="268" y="720" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">MI  (GPIO 21)</text>
+<line x1="280" y1="716" x2="320" y2="716" stroke="#e65100" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="720" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#e65100" text-anchor="start" font-weight="bold">LASER TTL</text>
+<text xml:space="preserve" x="268" y="754" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">SDA  (GPIO 22)</text>
+<line x1="280" y1="750" x2="320" y2="750" stroke="#5e35b1" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="754" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#5e35b1" text-anchor="start" font-weight="bold">I2C SDA (ADS1115)</text>
+<text xml:space="preserve" x="268" y="788" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="end" font-weight="bold">SCL  (GPIO 20)</text>
+<line x1="280" y1="784" x2="320" y2="784" stroke="#5e35b1" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="788" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#5e35b1" text-anchor="start" font-weight="bold">I2C SCL (ADS1115)</text>
+<text xml:space="preserve" x="160.0" y="832" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="middle" font-weight="normal">STEMMA QT port = 3V3, GND, SDA, SCL</text>
+<rect x="660" y="100" width="470" height="256" rx="6" fill="#f1f8e9" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="674" y="124" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="start" font-weight="bold">Driver M1X   UART address 0</text>
+<text xml:space="preserve" x="674" y="142" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">Adafruit TMC2209 breakout (6121). Mirror M1, X adjuster</text>
+<text xml:space="preserve" x="674" y="168" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 1 VDD</text>
+<text xml:space="preserve" x="752" y="168" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#c62828" text-anchor="start" font-weight="bold">Feather 3V3</text>
+<text xml:space="preserve" x="674" y="187" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 2 GND</text>
+<text xml:space="preserve" x="752" y="187" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#212121" text-anchor="start" font-weight="bold">Feather GND</text>
+<text xml:space="preserve" x="674" y="206" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 3 DIR</text>
+<text xml:space="preserve" x="752" y="206" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00838f" text-anchor="start" font-weight="bold">Feather 13 (GPIO 13)</text>
+<text xml:space="preserve" x="674" y="225" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 4 STEP</text>
+<text xml:space="preserve" x="752" y="225" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1565c0" text-anchor="start" font-weight="bold">Feather A5 (GPIO 4)</text>
+<text xml:space="preserve" x="674" y="244" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 5 MS1</text>
+<text xml:space="preserve" x="752" y="244" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6d4c41" text-anchor="start" font-weight="bold">tie to GND</text>
+<text xml:space="preserve" x="674" y="263" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 6 MS2</text>
+<text xml:space="preserve" x="752" y="263" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6d4c41" text-anchor="start" font-weight="bold">tie to GND</text>
+<text xml:space="preserve" x="674" y="282" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 7 DIAG</text>
+<text xml:space="preserve" x="752" y="282" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="674" y="301" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 8 INDEX</text>
+<text xml:space="preserve" x="752" y="301" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="674" y="320" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 9 UART</text>
+<text xml:space="preserve" x="752" y="320" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6a1b9a" text-anchor="start" font-weight="bold">UART bus</text>
+<line x1="590" y1="316" x2="660" y2="316" stroke="#6a1b9a" stroke-width="2" stroke-linecap="round"/>
+<circle cx="590" cy="316" r="4" fill="#6a1b9a"/>
+<text xml:space="preserve" x="674" y="339" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold">10 EN</text>
+<text xml:space="preserve" x="752" y="339" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold">Feather 12 (GPIO 12)</text>
+<rect x="960" y="156" width="150" height="176" rx="4" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1035" y="174" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="middle" font-weight="normal">screw terminals</text>
+<circle cx="1096" cy="196" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="200" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#ad1457" text-anchor="end" font-weight="bold">+ VMotor</text>
+<line x1="1101" y1="196" x2="1370" y2="196" stroke="#ad1457" stroke-width="2" stroke-linecap="round"/>
+<circle cx="1370" cy="196" r="4" fill="#ad1457"/>
+<circle cx="1096" cy="219" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="223" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#212121" text-anchor="end" font-weight="bold">- GND</text>
+<line x1="1101" y1="219" x2="1395" y2="219" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<circle cx="1395" cy="219" r="4" fill="#212121"/>
+<circle cx="1096" cy="242" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="246" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">1A</text>
+<circle cx="1096" cy="265" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="269" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">1B</text>
+<circle cx="1096" cy="288" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="292" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">2A</text>
+<circle cx="1096" cy="311" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="315" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">2B</text>
+<polyline points="1101,242 1147,242 1161,264" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<polyline points="1101,265 1147,265 1161,272" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<polyline points="1101,288 1147,288 1161,280" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<polyline points="1101,311 1147,311 1161,288" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<circle cx="1185" cy="276" r="24" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
+<text xml:space="preserve" x="1185" y="280" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#455a64" text-anchor="middle" font-weight="bold">NEMA 8</text>
+<text xml:space="preserve" x="1185" y="316" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#455a64" text-anchor="middle" font-weight="normal">coil A: 1A/1B</text>
+<text xml:space="preserve" x="1185" y="328" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#455a64" text-anchor="middle" font-weight="normal">coil B: 2A/2B</text>
+<rect x="660" y="378" width="470" height="256" rx="6" fill="#f1f8e9" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="674" y="402" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="start" font-weight="bold">Driver M1Y   UART address 1</text>
+<text xml:space="preserve" x="674" y="420" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">Adafruit TMC2209 breakout (6121). Mirror M1, Y adjuster</text>
+<text xml:space="preserve" x="674" y="446" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 1 VDD</text>
+<text xml:space="preserve" x="752" y="446" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#c62828" text-anchor="start" font-weight="bold">Feather 3V3</text>
+<text xml:space="preserve" x="674" y="465" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 2 GND</text>
+<text xml:space="preserve" x="752" y="465" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#212121" text-anchor="start" font-weight="bold">Feather GND</text>
+<text xml:space="preserve" x="674" y="484" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 3 DIR</text>
+<text xml:space="preserve" x="752" y="484" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00838f" text-anchor="start" font-weight="bold">Feather 33 (GPIO 33)</text>
+<text xml:space="preserve" x="674" y="503" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 4 STEP</text>
+<text xml:space="preserve" x="752" y="503" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1565c0" text-anchor="start" font-weight="bold">Feather 27 (GPIO 27)</text>
+<text xml:space="preserve" x="674" y="522" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 5 MS1</text>
+<text xml:space="preserve" x="752" y="522" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6d4c41" text-anchor="start" font-weight="bold">tie to 3V3</text>
+<text xml:space="preserve" x="674" y="541" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 6 MS2</text>
+<text xml:space="preserve" x="752" y="541" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6d4c41" text-anchor="start" font-weight="bold">tie to GND</text>
+<text xml:space="preserve" x="674" y="560" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 7 DIAG</text>
+<text xml:space="preserve" x="752" y="560" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="674" y="579" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 8 INDEX</text>
+<text xml:space="preserve" x="752" y="579" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="674" y="598" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 9 UART</text>
+<text xml:space="preserve" x="752" y="598" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6a1b9a" text-anchor="start" font-weight="bold">UART bus</text>
+<line x1="590" y1="594" x2="660" y2="594" stroke="#6a1b9a" stroke-width="2" stroke-linecap="round"/>
+<circle cx="590" cy="594" r="4" fill="#6a1b9a"/>
+<text xml:space="preserve" x="674" y="617" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold">10 EN</text>
+<text xml:space="preserve" x="752" y="617" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold">Feather 15 (GPIO 15)</text>
+<rect x="960" y="434" width="150" height="176" rx="4" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1035" y="452" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="middle" font-weight="normal">screw terminals</text>
+<circle cx="1096" cy="474" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="478" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#ad1457" text-anchor="end" font-weight="bold">+ VMotor</text>
+<line x1="1101" y1="474" x2="1370" y2="474" stroke="#ad1457" stroke-width="2" stroke-linecap="round"/>
+<circle cx="1370" cy="474" r="4" fill="#ad1457"/>
+<circle cx="1096" cy="497" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="501" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#212121" text-anchor="end" font-weight="bold">- GND</text>
+<line x1="1101" y1="497" x2="1395" y2="497" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<circle cx="1395" cy="497" r="4" fill="#212121"/>
+<circle cx="1096" cy="520" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="524" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">1A</text>
+<circle cx="1096" cy="543" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="547" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">1B</text>
+<circle cx="1096" cy="566" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="570" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">2A</text>
+<circle cx="1096" cy="589" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="593" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">2B</text>
+<polyline points="1101,520 1147,520 1161,542" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<polyline points="1101,543 1147,543 1161,550" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<polyline points="1101,566 1147,566 1161,558" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<polyline points="1101,589 1147,589 1161,566" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<circle cx="1185" cy="554" r="24" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
+<text xml:space="preserve" x="1185" y="558" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#455a64" text-anchor="middle" font-weight="bold">NEMA 8</text>
+<text xml:space="preserve" x="1185" y="594" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#455a64" text-anchor="middle" font-weight="normal">coil A: 1A/1B</text>
+<text xml:space="preserve" x="1185" y="606" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#455a64" text-anchor="middle" font-weight="normal">coil B: 2A/2B</text>
+<rect x="660" y="656" width="470" height="256" rx="6" fill="#f1f8e9" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="674" y="680" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="start" font-weight="bold">Driver M2X   UART address 2</text>
+<text xml:space="preserve" x="674" y="698" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">Adafruit TMC2209 breakout (6121). Mirror M2, X adjuster</text>
+<text xml:space="preserve" x="674" y="724" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 1 VDD</text>
+<text xml:space="preserve" x="752" y="724" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#c62828" text-anchor="start" font-weight="bold">Feather 3V3</text>
+<text xml:space="preserve" x="674" y="743" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 2 GND</text>
+<text xml:space="preserve" x="752" y="743" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#212121" text-anchor="start" font-weight="bold">Feather GND</text>
+<text xml:space="preserve" x="674" y="762" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 3 DIR</text>
+<text xml:space="preserve" x="752" y="762" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00838f" text-anchor="start" font-weight="bold">Feather 14 (GPIO 14)</text>
+<text xml:space="preserve" x="674" y="781" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 4 STEP</text>
+<text xml:space="preserve" x="752" y="781" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1565c0" text-anchor="start" font-weight="bold">Feather 32 (GPIO 32)</text>
+<text xml:space="preserve" x="674" y="800" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 5 MS1</text>
+<text xml:space="preserve" x="752" y="800" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6d4c41" text-anchor="start" font-weight="bold">tie to GND</text>
+<text xml:space="preserve" x="674" y="819" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 6 MS2</text>
+<text xml:space="preserve" x="752" y="819" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6d4c41" text-anchor="start" font-weight="bold">tie to 3V3</text>
+<text xml:space="preserve" x="674" y="838" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 7 DIAG</text>
+<text xml:space="preserve" x="752" y="838" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="674" y="857" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 8 INDEX</text>
+<text xml:space="preserve" x="752" y="857" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="674" y="876" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 9 UART</text>
+<text xml:space="preserve" x="752" y="876" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6a1b9a" text-anchor="start" font-weight="bold">UART bus</text>
+<line x1="590" y1="872" x2="660" y2="872" stroke="#6a1b9a" stroke-width="2" stroke-linecap="round"/>
+<circle cx="590" cy="872" r="4" fill="#6a1b9a"/>
+<text xml:space="preserve" x="674" y="895" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold">10 EN</text>
+<text xml:space="preserve" x="752" y="895" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold">Feather A1 (GPIO 25)</text>
+<rect x="960" y="712" width="150" height="176" rx="4" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1035" y="730" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="middle" font-weight="normal">screw terminals</text>
+<circle cx="1096" cy="752" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="756" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#ad1457" text-anchor="end" font-weight="bold">+ VMotor</text>
+<line x1="1101" y1="752" x2="1370" y2="752" stroke="#ad1457" stroke-width="2" stroke-linecap="round"/>
+<circle cx="1370" cy="752" r="4" fill="#ad1457"/>
+<circle cx="1096" cy="775" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="779" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#212121" text-anchor="end" font-weight="bold">- GND</text>
+<line x1="1101" y1="775" x2="1395" y2="775" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<circle cx="1395" cy="775" r="4" fill="#212121"/>
+<circle cx="1096" cy="798" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="802" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">1A</text>
+<circle cx="1096" cy="821" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="825" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">1B</text>
+<circle cx="1096" cy="844" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="848" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">2A</text>
+<circle cx="1096" cy="867" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="871" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">2B</text>
+<polyline points="1101,798 1147,798 1161,820" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<polyline points="1101,821 1147,821 1161,828" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<polyline points="1101,844 1147,844 1161,836" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<polyline points="1101,867 1147,867 1161,844" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<circle cx="1185" cy="832" r="24" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
+<text xml:space="preserve" x="1185" y="836" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#455a64" text-anchor="middle" font-weight="bold">NEMA 8</text>
+<text xml:space="preserve" x="1185" y="872" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#455a64" text-anchor="middle" font-weight="normal">coil A: 1A/1B</text>
+<text xml:space="preserve" x="1185" y="884" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#455a64" text-anchor="middle" font-weight="normal">coil B: 2A/2B</text>
+<rect x="660" y="934" width="470" height="256" rx="6" fill="#f1f8e9" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="674" y="958" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="start" font-weight="bold">Driver M2Y   UART address 3</text>
+<text xml:space="preserve" x="674" y="976" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">Adafruit TMC2209 breakout (6121). Mirror M2, Y adjuster</text>
+<text xml:space="preserve" x="674" y="1002" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 1 VDD</text>
+<text xml:space="preserve" x="752" y="1002" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#c62828" text-anchor="start" font-weight="bold">Feather 3V3</text>
+<text xml:space="preserve" x="674" y="1021" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 2 GND</text>
+<text xml:space="preserve" x="752" y="1021" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#212121" text-anchor="start" font-weight="bold">Feather GND</text>
+<text xml:space="preserve" x="674" y="1040" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 3 DIR</text>
+<text xml:space="preserve" x="752" y="1040" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00838f" text-anchor="start" font-weight="bold">Feather SCK (GPIO 5)</text>
+<text xml:space="preserve" x="674" y="1059" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 4 STEP</text>
+<text xml:space="preserve" x="752" y="1059" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1565c0" text-anchor="start" font-weight="bold">Feather A0 (GPIO 26)</text>
+<text xml:space="preserve" x="674" y="1078" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 5 MS1</text>
+<text xml:space="preserve" x="752" y="1078" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6d4c41" text-anchor="start" font-weight="bold">tie to 3V3</text>
+<text xml:space="preserve" x="674" y="1097" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 6 MS2</text>
+<text xml:space="preserve" x="752" y="1097" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6d4c41" text-anchor="start" font-weight="bold">tie to 3V3</text>
+<text xml:space="preserve" x="674" y="1116" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 7 DIAG</text>
+<text xml:space="preserve" x="752" y="1116" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="674" y="1135" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 8 INDEX</text>
+<text xml:space="preserve" x="752" y="1135" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="674" y="1154" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold"> 9 UART</text>
+<text xml:space="preserve" x="752" y="1154" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6a1b9a" text-anchor="start" font-weight="bold">UART bus</text>
+<line x1="590" y1="1150" x2="660" y2="1150" stroke="#6a1b9a" stroke-width="2" stroke-linecap="round"/>
+<circle cx="590" cy="1150" r="4" fill="#6a1b9a"/>
+<text xml:space="preserve" x="674" y="1173" font-family="Menlo, Consolas, monospace" font-size="12" fill="#212121" text-anchor="start" font-weight="bold">10 EN</text>
+<text xml:space="preserve" x="752" y="1173" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold">Feather MO (GPIO 19)</text>
+<rect x="960" y="990" width="150" height="176" rx="4" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1035" y="1008" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="middle" font-weight="normal">screw terminals</text>
+<circle cx="1096" cy="1030" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="1034" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#ad1457" text-anchor="end" font-weight="bold">+ VMotor</text>
+<line x1="1101" y1="1030" x2="1370" y2="1030" stroke="#ad1457" stroke-width="2" stroke-linecap="round"/>
+<circle cx="1370" cy="1030" r="4" fill="#ad1457"/>
+<circle cx="1096" cy="1053" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="1057" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#212121" text-anchor="end" font-weight="bold">- GND</text>
+<line x1="1101" y1="1053" x2="1395" y2="1053" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<circle cx="1395" cy="1053" r="4" fill="#212121"/>
+<circle cx="1096" cy="1076" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="1080" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">1A</text>
+<circle cx="1096" cy="1099" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="1103" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">1B</text>
+<circle cx="1096" cy="1122" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="1126" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">2A</text>
+<circle cx="1096" cy="1145" r="5" fill="#ffffff" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1084" y="1149" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#455a64" text-anchor="end" font-weight="bold">2B</text>
+<polyline points="1101,1076 1147,1076 1161,1098" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<polyline points="1101,1099 1147,1099 1161,1106" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<polyline points="1101,1122 1147,1122 1161,1114" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<polyline points="1101,1145 1147,1145 1161,1122" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linejoin="round"/>
+<circle cx="1185" cy="1110" r="24" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
+<text xml:space="preserve" x="1185" y="1114" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#455a64" text-anchor="middle" font-weight="bold">NEMA 8</text>
+<text xml:space="preserve" x="1185" y="1150" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#455a64" text-anchor="middle" font-weight="normal">coil A: 1A/1B</text>
+<text xml:space="preserve" x="1185" y="1162" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#455a64" text-anchor="middle" font-weight="normal">coil B: 2A/2B</text>
+<line x1="280" y1="240" x2="590" y2="240" stroke="#6a1b9a" stroke-width="2" stroke-linecap="round"/>
+<circle cx="590" cy="240" r="4" fill="#6a1b9a"/>
+<line x1="280" y1="274" x2="430" y2="274" stroke="#6a1b9a" stroke-width="2" stroke-linecap="round"/>
+<polyline points="430,274 440.0,267 450.0,281 460.0,267 470.0,281 480.0,267 490.0,281 500,274" fill="none" stroke="#6a1b9a" stroke-width="2" stroke-linejoin="round"/>
+<text xml:space="preserve" x="465.0" y="262" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6a1b9a" text-anchor="middle" font-weight="bold">1 kOhm</text>
+<line x1="500" y1="274" x2="590" y2="274" stroke="#6a1b9a" stroke-width="2" stroke-linecap="round"/>
+<circle cx="590" cy="274" r="4" fill="#6a1b9a"/>
+<line x1="590" y1="240" x2="590" y2="1150" stroke="#6a1b9a" stroke-width="3" stroke-linecap="round"/>
+<text xml:space="preserve" x="326" y="232" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6a1b9a" text-anchor="start" font-weight="bold">RX direct to bus</text>
+<text xml:space="preserve" x="290" y="296" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6a1b9a" text-anchor="start" font-weight="bold">TX through 1 kOhm</text>
+<text xml:space="preserve" x="598" y="1172" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6a1b9a" text-anchor="start" font-weight="bold">UART bus</text>
+<line x1="1370" y1="196" x2="1370" y2="1230" stroke="#ad1457" stroke-width="3" stroke-linecap="round"/>
+<line x1="1395" y1="219" x2="1395" y2="1230" stroke="#212121" stroke-width="3" stroke-linecap="round"/>
+<rect x="1150" y="1230" width="250" height="74" rx="6" fill="#fce4ec" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="1282" y="1256" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#212121" text-anchor="middle" font-weight="bold">12 V 2 A motor supply</text>
+<text xml:space="preserve" x="1282" y="1276" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="middle" font-weight="normal">+ to every VMotor, - to every GND</text>
+<text xml:space="preserve" x="1282" y="1292" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="middle" font-weight="normal">and to Feather GND</text>
+<circle cx="1370" cy="1230" r="4" fill="#ad1457"/>
+<circle cx="1395" cy="1230" r="4" fill="#212121"/>
+<rect x="40" y="882" width="520" height="150" rx="6" fill="#fff3e0" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="54" y="908" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="start" font-weight="bold">Quarton VLM-635-32 LPT laser (635 nm, &lt; 1 mW)</text>
+<text xml:space="preserve" x="54" y="926" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">3-6 V, &lt; 40 mA; TTL high = on (1-20 mA input), up to 10 kHz</text>
+<text xml:space="preserve" x="64" y="954" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">+V</text>
+<text xml:space="preserve" x="120" y="954" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#c62828" text-anchor="start" font-weight="bold">Feather 3V3</text>
+<text xml:space="preserve" x="64" y="976" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">GND</text>
+<text xml:space="preserve" x="120" y="976" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">Feather GND</text>
+<text xml:space="preserve" x="64" y="998" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">TTL</text>
+<text xml:space="preserve" x="120" y="998" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#e65100" text-anchor="start" font-weight="bold">Feather MI (GPIO 21)</text>
+<text xml:space="preserve" x="64" y="1020" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">Check the wire colours against the module's label (usually red +V, black GND).</text>
+<rect x="420" y="952" width="90" height="26" rx="4" fill="#bdbdbd" stroke="#424242"/>
+<line x1="510" y1="965" x2="550" y2="965" stroke="#e53935" stroke-width="3" stroke-linecap="round"/>
+<text xml:space="preserve" x="40" y="1052" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">Notes</text>
+<text xml:space="preserve" x="40" y="1070" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">- MS1/MS2 have no pull resistors on the breakout: tie each one</text>
+<text xml:space="preserve" x="40" y="1088" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">  to 3V3 or GND to set that driver's UART address.</text>
+<text xml:space="preserve" x="40" y="1106" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">- Leave the SPREAD solder jumper open (StealthChop).</text>
+<text xml:space="preserve" x="40" y="1124" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">- The current pot does nothing: the firmware sets current over UART.</text>
+<text xml:space="preserve" x="40" y="1142" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">- EN is pulled low on the breakout, so each driver is enabled until</text>
+<text xml:space="preserve" x="40" y="1160" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">  the firmware boots and drives EN high.</text>
+<text xml:space="preserve" x="40" y="1178" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">- The drivers only answer on UART once 12 V is on.</text>
+<text xml:space="preserve" x="40" y="1196" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">- Never connect or disconnect a motor while 12 V is on.</text>
+<text xml:space="preserve" x="40" y="1214" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">- Coil pairs: find the two wires with a few ohms between them</text>
+<text xml:space="preserve" x="40" y="1232" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">  (one coil) and put them on 1A/1B, the other pair on 2A/2B.</text>
+<text xml:space="preserve" x="40" y="1338" font-family="Helvetica, Arial, sans-serif" font-size="18" fill="#212121" text-anchor="start" font-weight="bold">Photodiodes</text>
+<rect x="40" y="1354" width="420" height="330" rx="6" fill="#ede7f6" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="54" y="1378" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="start" font-weight="bold">Adafruit ADS1115 16-bit ADC (product 1085)</text>
+<text xml:space="preserve" x="54" y="1396" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">I2C address 0x48. A STEMMA QT cable to the Feather</text>
+<text xml:space="preserve" x="54" y="1412" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">carries 3V3, GND, SDA and SCL in one plug.</text>
+<text xml:space="preserve" x="64" y="1442" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">VDD</text>
+<text xml:space="preserve" x="130" y="1442" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#c62828" text-anchor="start" font-weight="bold">Feather 3V3</text>
+<text xml:space="preserve" x="64" y="1464" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">GND</text>
+<text xml:space="preserve" x="130" y="1464" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">Feather GND</text>
+<text xml:space="preserve" x="64" y="1486" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">SCL</text>
+<text xml:space="preserve" x="130" y="1486" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#5e35b1" text-anchor="start" font-weight="bold">Feather SCL (GPIO 20)</text>
+<text xml:space="preserve" x="64" y="1508" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">SDA</text>
+<text xml:space="preserve" x="130" y="1508" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#5e35b1" text-anchor="start" font-weight="bold">Feather SDA (GPIO 22)</text>
+<text xml:space="preserve" x="64" y="1530" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">ADDR</text>
+<text xml:space="preserve" x="130" y="1530" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">GND (address 0x48)</text>
+<text xml:space="preserve" x="64" y="1552" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">ALRT</text>
+<text xml:space="preserve" x="130" y="1552" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="64" y="1574" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">A0</text>
+<text xml:space="preserve" x="130" y="1574" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#00695c" text-anchor="start" font-weight="bold">Vout of the reference TIA</text>
+<text xml:space="preserve" x="64" y="1596" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">A1</text>
+<text xml:space="preserve" x="130" y="1596" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#00695c" text-anchor="start" font-weight="bold">Vout of the output TIA</text>
+<text xml:space="preserve" x="64" y="1618" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">A2</text>
+<text xml:space="preserve" x="130" y="1618" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<text xml:space="preserve" x="64" y="1640" font-family="Menlo, Consolas, monospace" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">A3</text>
+<text xml:space="preserve" x="130" y="1640" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#757575" text-anchor="start" font-weight="normal">not connected</text>
+<rect x="490" y="1354" width="560" height="330" rx="6" fill="#e0f2f1" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="504" y="1378" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="start" font-weight="bold">Reference photodiode (beamsplitter reflected port)</text>
+<text xml:space="preserve" x="504" y="1396" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">BPW34 + MCP6002 (DIP-8, half A used) on a small board right behind the diode</text>
+<polygon points="750,1514 750,1604 830,1559" fill="#ffffff" stroke="#424242" stroke-width="2"/>
+<text xml:space="preserve" x="758" y="1544" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#212121" text-anchor="start" font-weight="bold">-</text>
+<text xml:space="preserve" x="758" y="1585" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#212121" text-anchor="start" font-weight="bold">+</text>
+<text xml:space="preserve" x="776" y="1563" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#757575" text-anchor="start" font-weight="normal">MCP6002</text>
+<text xml:space="preserve" x="744" y="1534" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="end" font-weight="normal">2</text>
+<text xml:space="preserve" x="744" y="1574" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="end" font-weight="normal">3</text>
+<text xml:space="preserve" x="838" y="1553" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">1</text>
+<line x1="620" y1="1539" x2="750" y2="1539" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<circle cx="620" cy="1539" r="4" fill="#00695c"/>
+<line x1="620" y1="1539" x2="620" y2="1569" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<line x1="608" y1="1569" x2="632" y2="1569" stroke="#00695c" stroke-width="2.5" stroke-linecap="round"/>
+<polygon points="620,1569 608,1591 632,1591" fill="#ffffff" stroke="#00695c" stroke-width="2"/>
+<line x1="620" y1="1591" x2="620" y2="1619" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<line x1="620" y1="1619" x2="620" y2="1629" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="608" y1="1629" x2="632" y2="1629" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="612" y1="1634" x2="628" y2="1634" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="616" y1="1639" x2="624" y2="1639" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="558" y1="1565" x2="588" y2="1577" stroke="#e53935" stroke-width="1.6" stroke-linecap="round"/>
+<polygon points="592,1579 582,1579 588,1571" fill="#e53935"/>
+<line x1="558" y1="1581" x2="588" y2="1593" stroke="#e53935" stroke-width="1.6" stroke-linecap="round"/>
+<polygon points="592,1595 582,1595 588,1587" fill="#e53935"/>
+<text xml:space="preserve" x="636" y="1573" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">K</text>
+<text xml:space="preserve" x="636" y="1599" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">A</text>
+<text xml:space="preserve" x="654" y="1587" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00695c" text-anchor="start" font-weight="bold">BPW34</text>
+<line x1="750" y1="1579" x2="720" y2="1579" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="720" y1="1579" x2="720" y2="1609" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="720" y1="1609" x2="720" y2="1619" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="708" y1="1619" x2="732" y2="1619" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="712" y1="1624" x2="728" y2="1624" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="716" y1="1629" x2="724" y2="1629" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="620" y1="1539" x2="620" y2="1446" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<line x1="620" y1="1489" x2="680" y2="1489" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<polyline points="680,1489 691.4285714285714,1482 702.8571428571429,1496 714.2857142857143,1482 725.7142857142857,1496 737.1428571428571,1482 748.5714285714286,1496 760,1489" fill="none" stroke="#00695c" stroke-width="2" stroke-linejoin="round"/>
+<text xml:space="preserve" x="720.0" y="1477" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00695c" text-anchor="middle" font-weight="bold">Rf 47 kOhm</text>
+<line x1="760" y1="1489" x2="870" y2="1489" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<line x1="620" y1="1446" x2="740.0" y2="1446" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<line x1="740.0" y1="1434" x2="740.0" y2="1458" stroke="#00695c" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="750.0" y1="1434" x2="750.0" y2="1458" stroke="#00695c" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="750.0" y1="1446" x2="870" y2="1446" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="745.0" y="1428" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00695c" text-anchor="middle" font-weight="bold">Cf 1 nF (C0G)</text>
+<line x1="870" y1="1446" x2="870" y2="1559" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<circle cx="870" cy="1559" r="4" fill="#00695c"/>
+<line x1="830" y1="1559" x2="960" y2="1559" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="964" y="1551" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00695c" text-anchor="start" font-weight="bold">Vout to</text>
+<text xml:space="preserve" x="964" y="1567" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00695c" text-anchor="start" font-weight="bold">ADS1115 A0</text>
+<text xml:space="preserve" x="504" y="1650" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">Pin 8 VDD to 3V3, pin 4 to GND, 100 nF across pins 8 and 4 at the chip.</text>
+<text xml:space="preserve" x="504" y="1668" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">Unused half B: pin 5 to GND, pin 6 to pin 7.  Vout = I_photo x Rf (0 V dark, up)</text>
+<rect x="490" y="1704" width="560" height="330" rx="6" fill="#e0f2f1" stroke="#424242" stroke-width="1.5"/>
+<text xml:space="preserve" x="504" y="1728" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#212121" text-anchor="start" font-weight="bold">Output photodiode (behind the fiber)</text>
+<text xml:space="preserve" x="504" y="1746" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">BPW34 + MCP6002 (DIP-8, half A used) on a small board right behind the diode</text>
+<polygon points="750,1864 750,1954 830,1909" fill="#ffffff" stroke="#424242" stroke-width="2"/>
+<text xml:space="preserve" x="758" y="1894" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#212121" text-anchor="start" font-weight="bold">-</text>
+<text xml:space="preserve" x="758" y="1935" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#212121" text-anchor="start" font-weight="bold">+</text>
+<text xml:space="preserve" x="776" y="1913" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#757575" text-anchor="start" font-weight="normal">MCP6002</text>
+<text xml:space="preserve" x="744" y="1884" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="end" font-weight="normal">2</text>
+<text xml:space="preserve" x="744" y="1924" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="end" font-weight="normal">3</text>
+<text xml:space="preserve" x="838" y="1903" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">1</text>
+<line x1="620" y1="1889" x2="750" y2="1889" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<circle cx="620" cy="1889" r="4" fill="#00695c"/>
+<line x1="620" y1="1889" x2="620" y2="1919" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<line x1="608" y1="1919" x2="632" y2="1919" stroke="#00695c" stroke-width="2.5" stroke-linecap="round"/>
+<polygon points="620,1919 608,1941 632,1941" fill="#ffffff" stroke="#00695c" stroke-width="2"/>
+<line x1="620" y1="1941" x2="620" y2="1969" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<line x1="620" y1="1969" x2="620" y2="1979" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="608" y1="1979" x2="632" y2="1979" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="612" y1="1984" x2="628" y2="1984" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="616" y1="1989" x2="624" y2="1989" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="558" y1="1915" x2="588" y2="1927" stroke="#e53935" stroke-width="1.6" stroke-linecap="round"/>
+<polygon points="592,1929 582,1929 588,1921" fill="#e53935"/>
+<line x1="558" y1="1931" x2="588" y2="1943" stroke="#e53935" stroke-width="1.6" stroke-linecap="round"/>
+<polygon points="592,1945 582,1945 588,1937" fill="#e53935"/>
+<text xml:space="preserve" x="636" y="1923" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">K</text>
+<text xml:space="preserve" x="636" y="1949" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#757575" text-anchor="start" font-weight="normal">A</text>
+<text xml:space="preserve" x="654" y="1937" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00695c" text-anchor="start" font-weight="bold">BPW34</text>
+<line x1="750" y1="1929" x2="720" y2="1929" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="720" y1="1929" x2="720" y2="1959" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="720" y1="1959" x2="720" y2="1969" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="708" y1="1969" x2="732" y2="1969" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="712" y1="1974" x2="728" y2="1974" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="716" y1="1979" x2="724" y2="1979" stroke="#212121" stroke-width="2" stroke-linecap="round"/>
+<line x1="620" y1="1889" x2="620" y2="1796" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<line x1="620" y1="1839" x2="680" y2="1839" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<polyline points="680,1839 691.4285714285714,1832 702.8571428571429,1846 714.2857142857143,1832 725.7142857142857,1846 737.1428571428571,1832 748.5714285714286,1846 760,1839" fill="none" stroke="#00695c" stroke-width="2" stroke-linejoin="round"/>
+<text xml:space="preserve" x="720.0" y="1827" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00695c" text-anchor="middle" font-weight="bold">Rf 47 kOhm</text>
+<line x1="760" y1="1839" x2="870" y2="1839" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<line x1="620" y1="1796" x2="740.0" y2="1796" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<line x1="740.0" y1="1784" x2="740.0" y2="1808" stroke="#00695c" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="750.0" y1="1784" x2="750.0" y2="1808" stroke="#00695c" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="750.0" y1="1796" x2="870" y2="1796" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="745.0" y="1778" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00695c" text-anchor="middle" font-weight="bold">Cf 1 nF (C0G)</text>
+<line x1="870" y1="1796" x2="870" y2="1909" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<circle cx="870" cy="1909" r="4" fill="#00695c"/>
+<line x1="830" y1="1909" x2="960" y2="1909" stroke="#00695c" stroke-width="2" stroke-linecap="round"/>
+<text xml:space="preserve" x="964" y="1901" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00695c" text-anchor="start" font-weight="bold">Vout to</text>
+<text xml:space="preserve" x="964" y="1917" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#00695c" text-anchor="start" font-weight="bold">ADS1115 A1</text>
+<text xml:space="preserve" x="504" y="2000" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">Pin 8 VDD to 3V3, pin 4 to GND, 100 nF across pins 8 and 4 at the chip.</text>
+<text xml:space="preserve" x="504" y="2018" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">Unused half B: pin 5 to GND, pin 6 to pin 7.  Vout = I_photo x Rf (0 V dark, up)</text>
+<text xml:space="preserve" x="40" y="1724" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#212121" text-anchor="start" font-weight="bold">Photodiode notes</text>
+<text xml:space="preserve" x="40" y="1742" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">- Cathode to pin 2, anode to GND (zero bias).</text>
+<text xml:space="preserve" x="40" y="1760" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">  The output then rises from 0 V with light.</text>
+<text xml:space="preserve" x="40" y="1778" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">- To find the anode: in room light a meter on</text>
+<text xml:space="preserve" x="40" y="1796" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">  DC volts reads about +0.3 V with the red</text>
+<text xml:space="preserve" x="40" y="1814" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">  probe on the anode.</text>
+<text xml:space="preserve" x="40" y="1832" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">- Keep diode leads under 10 mm; run a twisted</text>
+<text xml:space="preserve" x="40" y="1850" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">  pair (Vout + GND) to the ADS1115.</text>
+<text xml:space="preserve" x="40" y="1868" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">- 47 kOhm puts 3.3 V at 70 uA (about 175 uW).</text>
+<text xml:space="preserve" x="40" y="1886" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">  Fit a smaller Rf if a channel saturates and</text>
+<text xml:space="preserve" x="40" y="1904" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">  set PD_REF/OUT_TIA_OHMS in config.h to match.</text>
+<text xml:space="preserve" x="40" y="1922" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#757575" text-anchor="start" font-weight="normal">- Rf x Cf = 47 us, a 3.4 kHz bandwidth.</text>
+</svg>
