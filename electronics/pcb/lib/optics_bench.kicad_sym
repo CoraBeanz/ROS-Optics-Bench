@@ -583,7 +583,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(property "Reference" "U"
-			(at -7.62 16.51 0)
+			(at -7.62 11.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -592,7 +592,7 @@
 			)
 		)
 		(property "Value" "Adafruit TMC2209 Breakout"
-			(at -7.62 -19.05 0)
+			(at -7.62 -11.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -601,7 +601,7 @@
 			)
 		)
 		(property "Footprint" "optics_bench:Adafruit_TMC2209_Socket"
-			(at 0 -21.59 0)
+			(at 0 -13.97 0)
 			(hide yes)
 			(effects
 				(font
@@ -618,7 +618,7 @@
 				)
 			)
 		)
-		(property "Description" "Adafruit TMC2209 stepper driver breakout (product 6121), plugged into female headers. Pins 11-16 are the terminal-block holes fitted with a male header"
+		(property "Description" "Adafruit TMC2209 stepper driver breakout (product 6121), plugged in by its 10-pin logic header. Motor and VM wires go to the breakout's own screw terminals"
 			(at 0 0 0)
 			(hide yes)
 			(effects
@@ -629,8 +629,8 @@
 		)
 		(symbol "Adafruit_TMC2209_Breakout_0_1"
 			(rectangle
-				(start -7.62 15.24)
-				(end 7.62 -17.78)
+				(start -7.62 10.16)
+				(end 7.62 -10.16)
 				(stroke
 					(width 0.254)
 					(type default)
@@ -642,7 +642,7 @@
 		)
 		(symbol "Adafruit_TMC2209_Breakout_1_1"
 			(pin passive line
-				(at -10.16 12.7 0)
+				(at -10.16 7.62 0)
 				(length 2.54)
 				(name "VDD"
 					(effects
@@ -660,7 +660,7 @@
 				)
 			)
 			(pin passive line
-				(at -10.16 10.16 0)
+				(at -10.16 5.08 0)
 				(length 2.54)
 				(name "GND"
 					(effects
@@ -670,42 +670,6 @@
 					)
 				)
 				(number "2"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at -10.16 5.08 0)
-				(length 2.54)
-				(name "MS1"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "5"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at -10.16 2.54 0)
-				(length 2.54)
-				(name "MS2"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "6"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -732,7 +696,7 @@
 				)
 			)
 			(pin passive line
-				(at -10.16 -5.08 0)
+				(at -10.16 -2.54 0)
 				(length 2.54)
 				(name "~{EN}"
 					(effects
@@ -750,7 +714,7 @@
 				)
 			)
 			(pin passive line
-				(at -10.16 -7.62 0)
+				(at -10.16 -5.08 0)
 				(length 2.54)
 				(name "STEP"
 					(effects
@@ -768,7 +732,7 @@
 				)
 			)
 			(pin passive line
-				(at -10.16 -10.16 0)
+				(at -10.16 -7.62 0)
 				(length 2.54)
 				(name "DIR"
 					(effects
@@ -786,7 +750,43 @@
 				)
 			)
 			(pin passive line
-				(at -10.16 -12.7 0)
+				(at 10.16 7.62 180)
+				(length 2.54)
+				(name "MS1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "5"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 10.16 5.08 180)
+				(length 2.54)
+				(name "MS2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "6"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 10.16 0 180)
 				(length 2.54)
 				(name "DIAG"
 					(effects
@@ -804,7 +804,7 @@
 				)
 			)
 			(pin passive line
-				(at -10.16 -15.24 0)
+				(at 10.16 -2.54 180)
 				(length 2.54)
 				(name "INDEX"
 					(effects
@@ -814,114 +814,6 @@
 					)
 				)
 				(number "8"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 10.16 12.7 180)
-				(length 2.54)
-				(name "VM"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "16"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 10.16 10.16 180)
-				(length 2.54)
-				(name "GND"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "15"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 10.16 5.08 180)
-				(length 2.54)
-				(name "1A"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "12"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 10.16 2.54 180)
-				(length 2.54)
-				(name "1B"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "11"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 10.16 0 180)
-				(length 2.54)
-				(name "2A"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "13"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 10.16 -2.54 180)
-				(length 2.54)
-				(name "2B"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "14"
 					(effects
 						(font
 							(size 1.27 1.27)

@@ -30,6 +30,8 @@ POWER = {"+12V", "/VIN", "/VIN_F"}
 
 
 def net_rule(net):
+    if net == "GND":
+        return 0.4, 0.2
     if net in POWER:
         return 1.0, 0.3
     if net.startswith("/M") and net[-3:] in ("_1A", "_1B", "_2A", "_2B"):
@@ -161,6 +163,10 @@ def route_board(b, board, nets, pad_shapes, w, h, pad_by_key):
         r.add(s)
     for (x, y) in b.get("keepouts", []):          # screw heads around mounting holes
         r.keepouts.append((Shape("circle", None, (0, 1), 0, cx=x, cy=y, r=3.0), False))
+    for s in pad_shapes:                           # standoffs on the smaller unplated holes
+        if s.net is None and s.kind == "circle" and s.g["r"] < 1.5:
+            r.keepouts.append((Shape("circle", None, (0, 1), 0, cx=s.g["cx"], cy=s.g["cy"],
+                                     r=s.g["r"] + 1.0), False))
     by_net = {}
     for s in pad_shapes:
         if s.net and s.net != "GND" and not s.net.startswith("unconnected"):
@@ -193,7 +199,12 @@ def route_board(b, board, nets, pad_shapes, w, h, pad_by_key):
             failed.append(("GND", "tie", a_key, b_key))
         else:
             r.commit(path, "GND", width / 2, clr)
-    for net in [n for n in order if n in by_net] + rest:
+    nets_to_route = [n for n in order if n in by_net] + rest
+    if b.get("route_gnd"):
+        # a thin ground tree under the pours, so no pour piece boxed in by other nets is left floating
+        by_net["GND"] = [s for s in pad_shapes if s.net == "GND"]
+        nets_to_route.append("GND")
+    for net in nets_to_route:
         width, clr = net_rule(net)
         hw = width / 2
         pads = list(by_net[net])
@@ -211,12 +222,10 @@ def route_board(b, board, nets, pad_shapes, w, h, pad_by_key):
             pads.sort(key=near)
             tgt = pads.pop(0)
             targets = [c for c in r.cells_in(tgt, tgt.layers) if not blk[c[0], 2 * c[1], 2 * c[2]]]
-            if not targets:
-                failed.append((net, "no free cell in pad", tgt.g["cx"], tgt.g["cy"]))
-                continue
-            path = r.astar(tree, targets, blk, vblk)
+            path = r.astar(tree, targets, blk, vblk) if targets else None
             if path is None:
-                failed.append((net, "no path", tgt.g["cx"], tgt.g["cy"]))
+                if net != "GND":                   # the pours usually reach a pad the tree could not
+                    failed.append((net, "no path", tgt.g["cx"], tgt.g["cy"]))
                 continue
             r.commit(path, net, hw, clr)
             tree |= set(path) | r.cells_in(tgt, tgt.layers)
@@ -291,7 +300,7 @@ def build(name):
             nm = pinnet.get((ref, pad.GetNumber()))
             if nm:
                 pad.SetNet(net(nm))
-            if nm == "GND" and c["footprint"].startswith("optics_bench:"):
+            if nm == "GND" and (c["footprint"].startswith("optics_bench:") or ref in b.get("solid_gnd", ())):
                 # header pins between routed signals get too few thermal spokes; tie them solid
                 pad.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_FULL)
             if pad.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH or (not nm and not pad.GetNumber()):

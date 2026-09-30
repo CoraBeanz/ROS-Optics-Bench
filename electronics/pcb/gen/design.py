@@ -31,15 +31,13 @@ SYMBOLS = {
                ("26", "IO14", "passive"), ("27", "SCL/IO20", "passive"), ("28", "SDA/IO22", "passive")],
         width=25.4),
     "Adafruit_TMC2209_Breakout": dict(
-        ref="U", descr="Adafruit TMC2209 stepper driver breakout (product 6121), plugged into female headers. "
-                       "Pins 11-16 are the terminal-block holes fitted with a male header",
+        ref="U", descr="Adafruit TMC2209 stepper driver breakout (product 6121), plugged in by its 10-pin "
+                       "logic header. Motor and VM wires go to the breakout's own screw terminals",
         footprint="optics_bench:Adafruit_TMC2209_Socket",
-        left=[("1", "VDD", "passive"), ("2", "GND", "passive"), "", ("5", "MS1", "passive"),
-              ("6", "MS2", "passive"), ("9", "UART", "passive"), "", ("10", "~{EN}", "passive"),
-              ("4", "STEP", "passive"), ("3", "DIR", "passive"), ("7", "DIAG", "passive"),
-              ("8", "INDEX", "passive")],
-        right=[("16", "VM", "passive"), ("15", "GND", "passive"), "", ("12", "1A", "passive"),
-               ("11", "1B", "passive"), ("13", "2A", "passive"), ("14", "2B", "passive")],
+        left=[("1", "VDD", "passive"), ("2", "GND", "passive"), "", ("9", "UART", "passive"),
+              ("10", "~{EN}", "passive"), ("4", "STEP", "passive"), ("3", "DIR", "passive")],
+        right=[("5", "MS1", "passive"), ("6", "MS2", "passive"), "", ("7", "DIAG", "passive"),
+               ("8", "INDEX", "passive")],
         width=15.24),
     "Adafruit_ADS1115_Breakout": dict(
         ref="A", descr="Adafruit ADS1115 16-bit ADC breakout (product 1085), plugged into a female header",
@@ -62,15 +60,16 @@ AXES = [  # name, STEP, DIR, EN, DIAG (Feather pad numbers), MS1, MS2 straps
     ("M2Y", "5", "11", "12", "16", V33, V33),   # GPIO 26, 5, 19; DIAG to I37; addr 3
 ]
 
-# Control board layout (mm, y down): Feather upright on the left with USB at the top edge,
-# drivers in a 2x2 block with their logic headers facing a central channel, motor plugs
-# on the top and bottom edges, power input and off-board plugs along the bottom.
-DRIVER_PCB = [(34.925, 31.115, 180), (64.135, 31.115, 180), (57.785, 45.085, 0), (86.995, 45.085, 0)]
-MOTOR_JST_PCB = [(45.085, 4.445), (74.295, 4.445), (40.005, 70.485), (69.215, 70.485)]
-DRIVER_CAP_PCB = [(36.195, 4.445), (65.405, 4.445), (52.705, 70.485), (81.915, 70.485)]
+# Control board layout (mm, y down): Feather upright on the left with USB at the top edge.
+# The TMC2209 breakouts keep their screw terminals and plug in by the 10-pin logic header
+# only. The top pair is turned so its terminals sit on the top edge and the bottom pair on
+# the bottom edge, so motor and VM wires come in from outside the board. Power input,
+# driver VM plugs and the test header sit in the middle; laser and photodiode plugs bottom left.
+DRIVER_PCB = [(34.925, 22.225, 180), (64.135, 22.225, 180), (57.785, 77.775, 0), (86.995, 77.775, 0)]
+# 2-pin VM plug for each driver (pin 1 = +12 V, 2 = GND) and its 100 uF capacitor
+VM_JST_PCB = [(40.005, 28.575, 0), (69.215, 28.575, 0), (52.705, 70.485, 0), (81.915, 70.485, 0)]
+DRIVER_CAP_PCB = [(47.625, 28.575), (77.47, 28.575), (45.085, 70.485), (73.66, 70.485)]
 FEATHER_PCB = (8.89, 6.985, 270)                   # pad 1 (RST); USB end at the top edge
-
-
 def control_board():
     parts = {}
     feather = {str(n): NC for n in range(1, 29)}
@@ -86,15 +85,13 @@ def control_board():
         parts[f"U{i + 1}"] = dict(
             lib="optics_bench:Adafruit_TMC2209_Breakout", value=f"TMC2209 {ax} (addr {i})",
             pins={"1": V33, "2": GND, "3": f"{ax}_DIR", "4": f"{ax}_STEP", "5": ms1, "6": ms2,
-                  "7": f"{ax}_DIAG", "8": NC, "9": "TMC_UART", "10": f"{ax}_EN",
-                  "11": f"{ax}_1B", "12": f"{ax}_1A", "13": f"{ax}_2A", "14": f"{ax}_2B",
-                  "15": GND, "16": V12},
+                  "7": f"{ax}_DIAG", "8": NC, "9": "TMC_UART", "10": f"{ax}_EN"},
             sch=(193.04 + (i % 2) * 91.44, 55.88 + (i // 2) * 71.12), pcb=DRIVER_PCB[i])
         parts[f"J{i + 1}"] = dict(
-            lib="Connector_Generic:Conn_01x04", value=f"Motor {ax}",
-            fp="Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical",
-            pins={"1": f"{ax}_1A", "2": f"{ax}_1B", "3": f"{ax}_2A", "4": f"{ax}_2B"},
-            sch=(236.22 + (i % 2) * 91.44, 63.5 + (i // 2) * 71.12), pcb=(*MOTOR_JST_PCB[i], 0))
+            lib="Connector_Generic:Conn_01x02", value=f"VM {ax}",
+            fp="Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical",
+            pins={"1": V12, "2": GND},
+            sch=(236.22 + (i % 2) * 91.44, 63.5 + (i // 2) * 71.12), pcb=VM_JST_PCB[i])
         parts[f"C{i + 1}"] = dict(
             lib="Device:C_Polarized", value="100uF 25V", fp="Capacitor_THT:CP_Radial_D6.3mm_P2.50mm",
             pins={"1": V12, "2": GND},
@@ -107,38 +104,38 @@ def control_board():
     # TVS, bulk capacitor and a power LED.
     parts["J5"] = dict(lib="Connector:Screw_Terminal_01x02", value="12V IN",
                        fp="TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
-                       pins={"1": "VIN", "2": GND}, sch=(30.48, 195.58), pcb=(93.98, 75.565, 90))   # wire entry faces the right edge
+                       pins={"1": "VIN", "2": GND}, sch=(30.48, 195.58), pcb=(93.98, 50.8, 90))   # wire entry faces the right edge
     parts["J6"] = dict(lib="Connector:Barrel_Jack", value="12V IN 5.5x2.1",
                        fp="Connector_BarrelJack:BarrelJack_Horizontal",
-                       pins={"1": "VIN", "2": GND}, sch=(30.48, 215.9), pcb=(85.725, 87.63, 180))
+                       pins={"1": "VIN", "2": GND}, sch=(30.48, 215.9), pcb=(85.725, 62.23, 180))
     parts["F1"] = dict(lib="Device:Polyfuse", value="MF-RHT200", fp="Fuse:Fuse_Bourns_MF-RHT200",
-                       pins={"1": "VIN", "2": "VIN_F"}, sch=(50.8, 190.5), pcb=(75.565, 80.645, 0))
+                       pins={"1": "VIN", "2": "VIN_F"}, sch=(50.8, 190.5), pcb=(79.375, 44.45, 0))
     parts["D1"] = dict(lib="Device:D_Schottky", value="1N5822", fp="Diode_THT:D_DO-201AD_P15.24mm_Horizontal",
-                       pins={"1": V12, "2": "VIN_F"}, sch=(73.66, 185.42), pcb=(55.88, 85.725, 0))
+                       pins={"1": V12, "2": "VIN_F"}, sch=(73.66, 185.42), pcb=(55.88, 53.34, 0))
     parts["D2"] = dict(lib="Device:D_TVS", value="P6KE18CA", fp="Diode_THT:D_DO-15_P10.16mm_Horizontal",
-                       pins={"1": V12, "2": GND}, sch=(83.82, 198.12), pcb=(57.15, 93.345, 0))
+                       pins={"1": V12, "2": GND}, sch=(83.82, 198.12), pcb=(57.15, 62.23, 0))
     parts["C5"] = dict(lib="Device:C_Polarized", value="470uF 25V", fp="Capacitor_THT:CP_Radial_D10.0mm_P5.00mm",
-                       pins={"1": V12, "2": GND}, sch=(109.22, 198.12), pcb=(45.72, 88.9, 0))
+                       pins={"1": V12, "2": GND}, sch=(109.22, 198.12), pcb=(45.72, 60.96, 0))
     parts["R2"] = dict(lib="Device:R", value="4.7k", fp="Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal",
-                       pins={"1": V12, "2": "LED_12V"}, sch=(127.0, 190.5), pcb=(59.69, 78.74, 0))
+                       pins={"1": V12, "2": "LED_12V"}, sch=(127.0, 190.5), pcb=(55.88, 43.18, 0))
     parts["D3"] = dict(lib="Device:LED", value="12V ON (green)", fp="LED_THT:LED_D3.0mm",
-                       pins={"1": GND, "2": "LED_12V"}, sch=(127.0, 213.36), pcb=(43.18, 79.375, 0))
+                       pins={"1": GND, "2": "LED_12V"}, sch=(127.0, 213.36), pcb=(71.12, 43.18, 0))
 
     # Off-board connections
     parts["J7"] = dict(lib="Connector_Generic:Conn_01x03", value="Laser",
                        fp="Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical",
-                       pins={"1": V33, "2": "LASER_TTL", "3": GND}, sch=(157.48, 190.5), pcb=(10.16, 94.615, 0))
+                       pins={"1": V33, "2": "LASER_TTL", "3": GND}, sch=(157.48, 190.5), pcb=(6.35, 81.28, 0))
     parts["J8"] = dict(lib="Connector_Generic:Conn_01x03", value="PD reference",
                        fp="Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical",
-                       pins={"1": V33, "2": "PD_REF", "3": GND}, sch=(157.48, 205.74), pcb=(21.59, 94.615, 0))
+                       pins={"1": V33, "2": "PD_REF", "3": GND}, sch=(157.48, 205.74), pcb=(19.05, 81.28, 0))
     parts["J9"] = dict(lib="Connector_Generic:Conn_01x03", value="PD output",
                        fp="Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical",
-                       pins={"1": V33, "2": "PD_OUT", "3": GND}, sch=(157.48, 220.98), pcb=(33.02, 94.615, 0))
+                       pins={"1": V33, "2": "PD_OUT", "3": GND}, sch=(157.48, 220.98), pcb=(12.7, 92.71, 0))
     parts["J10"] = dict(lib="Connector_Generic:Conn_01x10", value="Test (Analog Discovery)",
                         fp="Connector_PinHeader_2.54mm:PinHeader_1x10_P2.54mm_Vertical",
                         pins={"1": GND, "2": V33, "3": "I2C_SCL", "4": "I2C_SDA", "5": "TMC_UART",
                               "6": "LASER_TTL", "7": "PD_REF", "8": "PD_OUT", "9": "AIN2", "10": "AIN3"},
-                        sch=(203.2, 200.66), pcb=(3.81, 78.74, 90))
+                        sch=(203.2, 200.66), pcb=(35.56, 36.83, 90))
     parts["A2"] = dict(lib="optics_bench:Adafruit_ADS1115_Breakout", value="ADS1115 (0x48)",
                        pins={"1": V33, "2": GND, "3": "I2C_SCL", "4": "I2C_SDA", "5": GND, "6": NC,
                              "7": "PD_REF", "8": "PD_OUT", "9": "AIN2", "10": "AIN3"},
@@ -151,25 +148,32 @@ def control_board():
     # MS1/MS2 straps and ADS1115 ADDR tied to the part's own GND pin with a short track
     gnd_links = [(f"U{i + 1}.{pin}", f"U{i + 1}.2") for i, ax in enumerate(AXES)
                  for pin, strap in (("5", ax[5]), ("6", ax[6])) if strap == GND] + [("A2.5", "A2.2")]
-    silk = [("OPTICS BENCH CONTROL  rev A", 60.0, 97.9, 1.2, 0, None, True),
-            ("J5 12V IN", 93.98, 64.5, 1.0), ("+", 87.6, 75.565, 1.2), ("-", 87.6, 70.485, 1.2),
-            ("J7 LASER", 12.6, 90.2, 0.9), ("J8 PD REF", 24.0, 90.2, 0.9), ("J9 PD OUT", 35.5, 90.2, 0.9),
-            ("J10 TEST: GND 3V3 SCL SDA UART LSR REF OUT A2 A3", 15.2, 81.6, 0.7)]
+    gnd_links += [(f"J{i + 1}.2", f"C{i + 1}.2") for i in range(4)]      # each VM plug's GND to its capacitor
+    gnd_links += [("C1.2", "U1.2"), ("C2.2", "U2.2"), ("C5.2", "C3.2")]  # keep these pour pieces joined
+    silk = [("OPTICS BENCH CONTROL  rev B", 78.0, 35.5, 1.0, 0, None, True),
+            ("J5 12V IN", 93.98, 40.3, 1.0), ("+", 87.6, 50.8, 1.2), ("-", 87.6, 45.72, 1.2),
+            ("J7 LASER", 8.85, 77.0, 0.8), ("J8 PD REF", 21.55, 77.0, 0.8), ("J9 PD OUT", 15.2, 88.4, 0.8),
+            ("J10 TEST: GND 3V3 SCL SDA UART LSR REF OUT A2 A3", 47.0, 39.4, 0.6)]
     for i, (ax, *_rest) in enumerate(AXES):
-        x, y = MOTOR_JST_PCB[i]
-        silk.append((f"J{i + 1} MOTOR {ax}", x + 3.75, y + (4.25 if y < 50 else 4.9), 0.8))
+        x, y, _r = VM_JST_PCB[i]
+        if y < 50:
+            silk.append((f"J{i + 1} VM {ax}  + -", x + 1.25, y + 4.6, 0.7))
+        else:                                  # no room below: label to the right of the plug
+            silk.append((f"J{i + 1} VM {ax}", x + 9.8, y - 0.6, 0.7))
+            silk.append(("+  -", x + 9.8, y + 0.9, 0.7))
     # reference designators: None hides one that a silk label above already names
     for ref in ("J1", "J2", "J3", "J4", "J5", "J7", "J8", "J9", "J10", "H1", "H2", "H3", "H4"):
         parts[ref]["ref_at"] = None
     for i, (x, y, rot) in enumerate(DRIVER_PCB):
         cx = x + (11.43 if rot == 180 else -11.43)
-        parts[f"U{i + 1}"]["ref_at"] = (cx, y + (-10.0 if rot == 180 else 10.0))
+        parts[f"U{i + 1}"]["ref_at"] = (cx, y + (-6.0 if rot == 180 else 6.0))
     for i, (x, y) in enumerate(DRIVER_CAP_PCB):
-        parts[f"C{i + 1}"]["ref_at"] = (x - 3.3, y) if y < 50 else (x + 1.25, y + 4.4)
-    parts["D3"]["ref_at"] = (43.18, 82.4)
-    parts["J6"]["ref_at"] = (89.5, 79.8)
-    return dict(name="control_board", title="Optics bench control board", rev="A",
-                size=(100.0, 100.0), parts=parts, keepouts=holes, silk=silk, gnd_links=gnd_links,
+        parts[f"C{i + 1}"]["ref_at"] = (x + 1.25, y + 4.4) if y < 50 else (x - 3.3, y)
+    parts["D3"]["ref_at"] = (72.39, 40.3)
+    parts["J6"]["ref_at"] = (89.5, 54.4)
+    return dict(name="control_board", title="Optics bench control board", rev="B",
+                size=(100.0, 100.0), parts=parts, keepouts=holes, silk=silk,
+                gnd_links=gnd_links, solid_gnd=["J1", "J2", "J3", "J4", "J10"], route_gnd=True,
                 flags={V12: (60.96, 238.76), GND: (40.64, 238.76), V33: (50.8, 238.76)},
                 notes=CONTROL_NOTES)
 
@@ -180,8 +184,8 @@ CONTROL_NOTES = [
     ((20.32, 172.72), "12 V motor supply: PTC fuse, series Schottky (reverse polarity), TVS, bulk capacitor"),
     ((144.78, 172.72), "Off-board: laser, photodiode amp boards (1:1 JST-XH cables), test header"),
     ((175.26, 17.78), "Driver UART addresses from MS1/MS2: U1 0, U2 1, U3 2, U4 3.\n"
-                      "Fit a 6-pin male header in each breakout's terminal-block holes so the\n"
-                      "motor outputs and VM plug into the carrier."),
+                      "The breakouts keep their screw terminals: motors wire straight into them, and\n"
+                      "J1-J4 feed each breakout's VM +/- terminals over a short 2-wire lead."),
     ((50.8, 60.96), "TX reaches the shared single-wire UART bus through R1; RX joins it directly.\n"
                     "DIAG outputs go to input-only pins I34/I39/I36/I37 (firmware does not use them yet)."),
 ]
@@ -242,7 +246,7 @@ MPN = {
         "A1": ("Adafruit 5400", "Adafruit ESP32 Feather V2 (on hand)"),
         "U1": ("Adafruit 6121", "Adafruit TMC2209 breakout (on hand)"),
         "A2": ("Adafruit 1085", "Adafruit ADS1115 breakout"),
-        "J1": ("JST B4B-XH-A(LF)(SN)", "JST-XH 4-pin header, vertical"),
+        "J1": ("JST B2B-XH-A(LF)(SN)", "JST-XH 2-pin header, vertical (driver VM feed)"),
         "J5": ("Phoenix Contact 1729128", "Screw terminal 2-pin 5.08 mm (MKDS 1,5/2-5,08)"),
         "J6": ("CUI PJ-102AH", "DC barrel jack 5.5 x 2.1 mm"),
         "J7": ("JST B3B-XH-A(LF)(SN)", "JST-XH 3-pin header, vertical"),
@@ -275,11 +279,12 @@ EXTRA_BOM = {
         ("A1 socket", "Female header 1x16, 2.54 mm, 8.5 mm tall", "generic (e.g. Adafruit 2940 kit)", 1),
         ("A1 socket", "Female header 1x12, 2.54 mm, 8.5 mm tall", "generic (e.g. Adafruit 2940 kit)", 1),
         ("U1-U4 sockets", "Female header 1x10, 2.54 mm", "generic", 4),
-        ("U1-U4 sockets", "Female header 1x06, 2.54 mm", "generic", 4),
-        ("U1-U4 breakouts", "Male header 1x06, 2.54 mm, soldered into each breakout's terminal-block holes",
-         "generic", 4),
+        ("U1-U4 standoffs", "M2 x 11 mm standoff + 2 M2 screws, under each breakout's terminal-end holes",
+         "generic", 8),
+        ("J1-J4 VM leads", "JST-XH 2-pin lead, about 60 mm, bare ends into the breakout's VM + / - terminals",
+         "JST", 4),
         ("A2 socket", "Female header 1x10, 2.54 mm", "generic", 1),
-        ("J1-J4, J7-J9 cables", "JST-XH housings (XHP-4, XHP-3) and SXH-001T-P0.6 crimps, or pre-crimped leads",
+        ("J7-J9 cables", "JST-XH housings (XHP-3) and SXH-001T-P0.6 crimps, or pre-crimped leads",
          "JST", 1),
     ],
     "pd_amp": [

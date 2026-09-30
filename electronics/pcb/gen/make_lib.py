@@ -105,7 +105,19 @@ def socket_strip(x0, y0, n, dx, layer="F.SilkS"):
     return rect(min(xs) - 1.33, y0 - 1.33, max(xs) + 1.33, y0 + 1.33, layer)
 
 
-def footprint(name, descr, pads, body, labels, extra=()):
+def npth(x, y, d):
+    return [S("pad"), "", S("np_thru_hole"), S("circle"), [S("at"), x, y], [S("size"), d, d],
+            [S("drill"), d], [S("layers"), "*.Cu", "*.Mask"]]
+
+
+def socket_model(n, x, y, direction):
+    """KiCad's 1xN female header 3D model, pin 1 at (x, y), row running along +x or -x."""
+    path = f"${{KICAD10_3DMODEL_DIR}}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x{n:02d}_P2.54mm_Vertical.step"
+    return [S("model"), path, [S("offset"), [S("xyz"), x, -y, 0]], [S("scale"), [S("xyz"), 1, 1, 1]],
+            [S("rotate"), [S("xyz"), 0, 0, -90 if direction > 0 else 90]]]
+
+
+def footprint(name, descr, pads, body, labels, extra=(), models=()):
     x1, y1, x2, y2 = body
     fp = [S("footprint"), name, [S("version"), 20260206], [S("generator"), "optics_bench_gen"],
           [S("layer"), "F.Cu"], [S("descr"), descr], [S("tags"), "socket breakout adafruit"],
@@ -120,6 +132,7 @@ def footprint(name, descr, pads, body, labels, extra=()):
         fp.append(gr_text(txt, x, y, "F.SilkS", size, rot))
     fp += pads
     fp.append([S("embedded_fonts"), S("no")])
+    fp += list(models)
     return fp
 
 
@@ -135,23 +148,27 @@ def feather_socket():
     return footprint("Adafruit_Feather_ESP32_V2_Socket",
                      "Adafruit ESP32 Feather V2 (5400) on 16- and 12-pin female headers. Pad 1 = RST, "
                      "USB end at the left. Outline is the Feather board.",
-                     pads, (-6.35, -21.59, 44.45, 1.27), labels, extra)
+                     pads, (-6.35, -21.59, 44.45, 1.27), labels, extra,
+                     [socket_model(16, 0, 0, 1), socket_model(12, 10.16, -20.32, 1)])
 
 
 def tmc_socket():
     # Seen from the top with the logic header along the top edge (Adafruit 6121 rotated 180 deg).
+    # Only the logic header plugs in: the breakout keeps its screw terminals, which sit along the
+    # far edge. Two M2 holes line up with the breakout's terminal-end mounting holes for standoffs.
     logic = ["VDD", "GND", "DIR", "STEP", "MS1", "MS2", "DIAG", "IDX", "UART", "EN"]
-    term = ["1B", "1A", "2A", "2B", "GND", "VM"]
     pads = [tht_pad(str(i + 1), -i * 2.54, 0, i == 0) for i in range(10)]
-    pads += [tht_pad(str(11 + i), -17.78 + i * 2.54, 17.78, i == 0) for i in range(6)]
+    pads += [npth(-0.635, 19.05, 2.2), npth(-22.225, 19.05, 2.2)]
     labels = [(t, -i * 2.54, 2.4, 90, 0.7) for i, t in enumerate(logic)]
-    labels += [(t, -17.78 + i * 2.54, 15.4, 90, 0.7) for i, t in enumerate(term)]
-    labels += [("TMC2209", -11.43, 8.0, 0, 1.2)]
-    extra = [socket_strip(0, 0, 10, -2.54), socket_strip(-17.78, 17.78, 6, 2.54)]
+    labels += [("TMC2209", -11.43, 8.0, 0, 1.2), ("M2", -0.635, 16.4, 0, 0.7), ("M2", -22.225, 16.4, 0, 0.7),
+               ("SCREW TERMINALS THIS EDGE", -11.43, 19.3, 0, 0.8)]
+    extra = [socket_strip(0, 0, 10, -2.54)]
     return footprint("Adafruit_TMC2209_Socket",
-                     "Adafruit TMC2209 breakout (6121) on a 10-pin and a 6-pin female header. The 6-pin row "
-                     "is the terminal-block holes (2.54 mm) fitted with a male header. Outline is the breakout.",
-                     pads, (-24.765, -2.54, 1.905, 21.59), labels, extra)
+                     "Adafruit TMC2209 breakout (6121) on a 10-pin female header, screw terminals kept on the "
+                     "breakout at the far edge. M2 standoff holes under its terminal-end mounting holes. "
+                     "Outline is the breakout.",
+                     pads, (-24.765, -2.54, 1.905, 21.59), labels, extra,
+                     [socket_model(10, 0, 0, -1)])
 
 
 def ads_socket():
@@ -162,7 +179,7 @@ def ads_socket():
     extra = [socket_strip(0, 0, 10, 2.54)]
     return footprint("Adafruit_ADS1115_Socket",
                      "Adafruit ADS1115 breakout (1085) on a 10-pin female header, board above the header.",
-                     pads, (-2.49, -15.24, 25.35, 2.54), labels, extra)
+                     pads, (-2.49, -15.24, 25.35, 2.54), labels, extra, [socket_model(10, 0, 0, 1)])
 
 
 def write_footprints():
