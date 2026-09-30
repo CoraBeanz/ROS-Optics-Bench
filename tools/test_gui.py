@@ -19,6 +19,7 @@ the ADS1115, the output/reference ratio, and a rolling plot of both.
 
 import argparse
 import csv
+import dataclasses
 import html
 import math
 import queue
@@ -120,21 +121,38 @@ class SerialLink:
 
 
 class SimLink:
-    """Rough stand-in for the firmware so the GUI can be tried without hardware.
-    Constant-speed moves, no ramps, drivers always answer. The photodiodes see
-    a Gaussian coupling hill around a hidden best position of the four axes,
-    so the ratio climbs as you jog toward it."""
+    """Stand-in for the firmware so the GUI can be tried without hardware.
+    Constant-speed moves, no ramps, drivers always answer. The light comes
+    from the bench twin (tools/bench_twin): the adjusters follow the motors
+    through a little play, the mirrors steer the beam into the chosen fiber,
+    and the photodiodes read what couples. The best position is hidden a
+    little way from zero; SIM commands knock a mirror, switch fiber or show
+    where the peak is."""
 
     USTEPS_PER_REV = 3200
-    PD_BEST = [1500, -900, 600, 2200]    # microsteps where coupling peaks
-    PD_WIDTH = 2500                      # microsteps, 1/e half-width per axis
-    PD_REF_LIT, PD_PEAK_RATIO = 1.60, 0.55
-    PD_DARK_V = (0.004, 0.003)           # TIA offset + room light
     FSRS = (4.096, 2.048, 1.024, 0.512, 0.256)
+    FIBERS = ("mm50", "smf28", "sm630")
+    SIM_HELP = "OK SIM KNOCK <M1|M2> [mrad] | PEAK | FIBER <mm50|smf28|sm630> | RESET"
 
-    def __init__(self):
+    def __init__(self, fiber="mm50", seed=None):
+        try:
+            import numpy as np
+            from bench_twin import Bench, Mechanics, Optics, randomized
+        except ImportError as e:
+            raise RuntimeError(f"the simulator needs numpy ({e}): py -3 -m pip install -r tools/requirements.txt")
+        # An as-built bench: lever arms, distances, play and motor directions a
+        # little off the design values, as Align will find the real one
+        mech, optics = randomized(Mechanics(), Optics(), np.random.default_rng(seed))
+        self._twin_parts = (Bench, mech, optics)
+        rng = random.Random(seed)
+        # hidden best position: within 0.05 turn on M1 and 0.08 turn on M2
+        self.peak = [rng.uniform(-160, 160), rng.uniform(-160, 160), rng.uniform(-250, 250), rng.uniform(-250, 250)]
+        self.fiber = None
+        self.twin = None
+        self._set_fiber(fiber, seed)
         self.stream_hz = 0.0
         self.next_stream = 0.0
+        self.last_pd = time.monotonic()      # a PD line reports the mean of the samples since the last one
         self.dark = (0.0, 0.0)
         self.have_dark = False
         self.dark_done_at = None
@@ -144,6 +162,7 @@ class SimLink:
         self.lock = threading.Lock()
         n = len(AXES)
         self.pos = [0.0] * n
+        self.zero = [0.0] * n                # physical position of each reported 0 (ZERO, SETPOS)
         self.tgt = [0] * n
         self.lo = [-3 * self.USTEPS_PER_REV] * n
         self.hi = [3 * self.USTEPS_PER_REV] * n
@@ -160,6 +179,15 @@ class SimLink:
         self.rx.put("BOOT optics_bench sim")
         self.rx.put("READY")
         threading.Thread(target=self._tick, daemon=True).start()
+
+    def _set_fiber(self, fiber, seed=None):
+        bench_cls, mech, optics = self._twin_parts
+        old = self.twin
+        self.twin = bench_cls(dataclasses.replace(optics, fiber=fiber), mech, peak_usteps=self.peak, seed=seed)
+        if old is not None:            # keep the motors, the play and any knocks
+            self.twin.offset[:] = old.offset
+            self.twin.motor, self.twin.adjuster = old.motor.copy(), old.adjuster.copy()
+        self.fiber = fiber
 
     def _tick(self):
         last = time.monotonic()
@@ -180,6 +208,7 @@ class SimLink:
                     self.still_since[i] = now
                     step = self.rpm[i] / 60 * self.USTEPS_PER_REV * dt
                     self.pos[i] = self.tgt[i] if abs(d) <= step else self.pos[i] + step * (1 if d > 0 else -1)
+                    self._sync_twin()
                     if self.pos[i] == self.tgt[i]:
                         p = self.tgt[i]
                         at = self.limited[i] and (p <= self.lo[i] or p >= self.hi[i])
@@ -194,25 +223,27 @@ class SimLink:
                     self.rx.put(f"OK PD DARK REF={self.dark[0]:.6f} OUT={self.dark[1]:.6f}")
                 if self.stream_hz and now >= self.next_stream and not self.dark_done_at:
                     self.next_stream = now + 1 / self.stream_hz
-                    self.rx.put(self._pd_line(round(400 / self.stream_hz)))
+                    self.rx.put(self._pd_line())
 
-    def _pd_raw(self):
-        """Instantaneous TIA voltages (ref, out) with a little noise."""
-        ref = out = 0.0
-        if self.laser:
-            ref = self.PD_REF_LIT * (1 + random.gauss(0, 0.002))
-            d2 = sum(((self.pos[i] - self.PD_BEST[i]) / self.PD_WIDTH) ** 2 for i in range(len(AXES)))
-            out = ref * self.PD_PEAK_RATIO * math.exp(-d2)
-        return (ref + self.PD_DARK_V[0] + random.gauss(0, 0.0003),
-                out + self.PD_DARK_V[1] + random.gauss(0, 0.00005))
+    def _sync_twin(self):
+        self.twin.set_motor([p + z for p, z in zip(self.pos, self.zero)])
+
+    def _pd_raw(self, n=32):
+        """TIA voltages (ref, out) averaged over n ADC samples per channel,
+        dark offsets and noise included."""
+        self.twin.laser = self.laser
+        return self.twin.raw_volts(n)
 
     def _fsr(self, v):
         if self.fixed_fsr:
             return self.fixed_fsr
         return next((f for f in reversed(self.FSRS) if v < 0.9 * f), self.FSRS[0])
 
-    def _pd_line(self, n):
-        raw = self._pd_raw()
+    def _pd_line(self):
+        now = time.monotonic()
+        n = max(1, round((now - self.last_pd) * self.twin.sens.samples_per_s))
+        self.last_pd = now
+        raw = self._pd_raw(n)
         ref, out = (raw[k] - self.dark[k] if self.have_dark else raw[k] for k in (0, 1))
         ratio = f"{out / ref:.6f}" if self.laser and ref > 0.010 else "-"
         return (f"PD REF={ref:.6f} OUT={out:.6f} RATIO={ratio} FSR={self._fsr(raw[0]):.3f},{self._fsr(raw[1]):.3f} "
@@ -221,7 +252,7 @@ class SimLink:
     def _pd(self, a):
         sub = (a[0] or "").upper()
         if not sub:
-            return self._pd_line(1)
+            return self._pd_line()
         if sub == "STREAM":
             hz = 0.0 if (a[1] or "").upper() == "OFF" else float(a[1])
             if not 0 <= hz <= 50:
@@ -322,15 +353,20 @@ class SimLink:
                 self.tgt[i] = round(self.pos[i])
                 self.pos[i] = self.tgt[i]
                 self.jog_deadline[i] = None
+            self._sync_twin()
             return f"OK {c}"
-        if c == "ZERO":
+        if c == "ZERO":             # renames the position; nothing moves
             for i in self._axis(a[0], True):
+                self.zero[i] += self.pos[i]
                 self.pos[i] = self.tgt[i] = 0
             return "OK ZERO"
         if c == "SETPOS":
             i = self._axis(a[0])[0]
+            self.zero[i] += self.pos[i] - int(a[1])
             self.pos[i] = self.tgt[i] = int(a[1])
             return f"OK SETPOS {AXES[i]} POS={a[1]}"
+        if c == "SIM":
+            return self._sim(a)
         if c == "LIMITS":
             lo, hi = int(a[1]), int(a[2])
             if lo > hi or lo < -8 * self.USTEPS_PER_REV or hi > 8 * self.USTEPS_PER_REV:
@@ -363,6 +399,32 @@ class SimLink:
         if c == "SAVE":
             return "OK SAVE"
         return f"ERR unknown command {c}"
+
+    def _sim(self, a):
+        """Simulator-only commands (the firmware answers ERR unknown command)."""
+        sub = (a[0] or "").upper()
+        if sub == "KNOCK":
+            mirror = {"M1": 1, "1": 1, "M2": 2, "2": 2}.get((a[1] or "").upper())
+            if mirror is None:
+                return "ERR SIM KNOCK takes M1 or M2 and an optional size in mrad"
+            m, dx, dy = self.twin.knock(mirror, float(a[2]) if a[2] else random.uniform(0.5, 2.0))
+            return f"OK SIM KNOCK M{m} tilt X={dx:+.2f} Y={dy:+.2f} mrad"
+        if sub == "PEAK":
+            best = self.twin.peak_motor()
+            pos = ",".join(str(round(best[i] - self.zero[i])) for i in range(len(AXES)))
+            now = float(self.twin.coupling() / self.twin.best_coupling())
+            return (f"OK SIM PEAK POS={pos} (each axis arriving moving +) NOW={now:.1%} of best, "
+                    f"best ratio {self.twin.peak_ratio():.3f} ({self.fiber})")
+        if sub == "FIBER":
+            f = (a[1] or "").lower()
+            if f not in self.FIBERS:
+                return "ERR SIM FIBER takes " + ", ".join(self.FIBERS)
+            self._set_fiber(f)
+            return f"OK SIM FIBER={f}"
+        if sub == "RESET":
+            self.twin.clear_knocks()
+            return "OK SIM RESET (knocks cleared)"
+        return self.SIM_HELP
 
     def close(self):
         self.alive = False
@@ -554,6 +616,9 @@ class AxisRow:
 
 
 PD_RATES = [5, 10, 20, 50]           # PD STREAM choices, Hz
+# Replies the aligner's commands produce; kept out of the console while it runs
+ALIGN_TRAFFIC = ("PD ", "EVT DONE", "STATUS", "OK GOTO", "OK SPEED", "OK ACCEL", "OK ENABLE", "OK DISABLE",
+                 "OK PD STREAM")
 PD_SPANS = [("10 s", 10), ("30 s", 30), ("2 min", 120), ("10 min", 600)]
 PD_RANGES = ["AUTO", "4.096", "2.048", "1.024", "0.512", "0.256"]
 PD_HISTORY = 50 * 600                # samples kept: 10 minutes at the top rate
@@ -676,6 +741,8 @@ class TestApp(QMainWindow):
         self.pd_hist = deque(maxlen=PD_HISTORY)   # (t, ref V, out V, ratio or None, laser, fsr ref, fsr out)
         self.pd_t0 = None
         self.pd_peak = None
+        self.align = None                    # the running auto-align, if any
+        self.align_cal = None                # walk directions measured by the last first run
         self.setWindowTitle("Optics bench test panel")
         self.resize(1180, 960)
 
@@ -733,7 +800,7 @@ class TestApp(QMainWindow):
         self.laser_btn.clicked.connect(self.toggle_laser)
         row.addWidget(self.laser_btn)
 
-        s = QGroupBox("All motors")
+        s = self.motors_box = QGroupBox("All motors")
         g = QGridLayout(s)
         self.rpm_box = QDoubleSpinBox()
         self.rpm_box.setRange(0.1, 1000)
@@ -776,6 +843,41 @@ class TestApp(QMainWindow):
         v.addWidget(self.step_box)
         row.addWidget(st)
 
+        self.align_box = QGroupBox("Auto-align")
+        g = QGridLayout(self.align_box)
+        self.fiber_box = QComboBox()
+        self.fiber_box.addItems(["mm50: 50 um multimode", "smf28: practice cable", "sm630: single-mode"])
+        self.fiber_box.setToolTip("The fiber on the bench. Align sizes its steps for it, and the simulator\n"
+                                  "couples into it (SIM FIBER). Single-mode is the real target: its peak\n"
+                                  "is only a couple of full steps wide.")
+        self.fiber_box.currentIndexChanged.connect(self.fiber_changed)
+        g.addWidget(self.fiber_box, 0, 0, 1, 3)
+        self.align_btn = colored_button("Align", "#2e7d32", "#388e3c")
+        self.align_btn.setToolTip("Find the light and peak the out/ref ratio (tools/bench_twin/align.py):\n"
+                                  "steer with M2, walk with M1 and M2 together. The first run for a fiber\n"
+                                  "also measures the walk directions, so start it near the peak; later\n"
+                                  "runs recover from a knock. Needs the photodiodes. Stop or Esc ends it.")
+        self.align_btn.clicked.connect(self.toggle_align)
+        g.addWidget(self.align_btn, 0, 3)
+        self.sim_widgets = []
+        for col, m in enumerate(("M1", "M2")):
+            b = QPushButton(f"Knock {m}")
+            b.setToolTip(f"SIM KNOCK {m}: tilt mirror {m} by 0.5-2 mrad in a random direction, as if bumped")
+            b.clicked.connect(lambda _c=False, m=m: self.send(f"SIM KNOCK {m}"))
+            g.addWidget(b, 1, col)
+            self.sim_widgets.append(b)
+        b = QPushButton("Unknock")
+        b.setToolTip("SIM RESET: take the knocks back out")
+        b.clicked.connect(lambda: self.send("SIM RESET"))
+        g.addWidget(b, 1, 2)
+        self.sim_widgets.append(b)
+        b = QPushButton("Peak?")
+        b.setToolTip("SIM PEAK: where the simulator's best position is, and how close the coupling is to it")
+        b.clicked.connect(lambda: self.send("SIM PEAK"))
+        g.addWidget(b, 1, 3)
+        self.sim_widgets.append(b)
+        row.addWidget(self.align_box)
+
         row.addStretch()
         self.stop_btn = colored_button("STOP ALL  (Esc)", "#c0392b", "#e74c3c", pad="14px 24px")
         self.stop_btn.clicked.connect(self.stop_all)
@@ -793,6 +895,7 @@ class TestApp(QMainWindow):
             lbl.setStyleSheet("color: #999;")
             g.addWidget(lbl, 0, col)
         self.rows = [AxisRow(self, g, i, i + 1) for i in range(len(AXES))]
+        self.axes_box = box
         return box
 
     def _build_photodiodes(self):
@@ -970,7 +1073,7 @@ class TestApp(QMainWindow):
         choice = self.port_box.currentText()
         try:
             if choice == "Simulator":
-                self.link = SimLink()
+                self.link = SimLink(fiber=SimLink.FIBERS[self.fiber_box.currentIndex()])
             else:
                 if serial is None:
                     raise RuntimeError("pyserial is not installed: pip install pyserial")
@@ -986,6 +1089,11 @@ class TestApp(QMainWindow):
         self.poll_timer.start()
 
     def disconnect(self):
+        if self.align:
+            self.align["bench"].abort.set()
+            self.align = None
+            self.set_aligning(False)
+        self.align_cal = None
         self.poll_timer.stop()
         for i in list(self.jog_timers):
             self.stop_jog(i, send_stop=False)
@@ -1007,6 +1115,9 @@ class TestApp(QMainWindow):
         self.port_box.setEnabled(not on)
         self.laser_btn.setEnabled(on)
         self.stop_btn.setEnabled(on)
+        self.align_box.setVisible(on)
+        for w in self.sim_widgets:
+            w.setVisible(on and isinstance(self.link, SimLink))
         if on:
             self.conn_dot.set_state("ok", "SIMULATOR" if isinstance(self.link, SimLink) else "CONNECTED")
             self.statusBar().showMessage("Connected")
@@ -1071,6 +1182,8 @@ class TestApp(QMainWindow):
                 self.send(f"STOP {AXES[i]}")
 
     def stop_all(self):
+        if self.align:
+            self.align["bench"].abort.set()
         for i in list(self.jog_timers):
             self.stop_jog(i, send_stop=False)
         self.send("STOP ALL")
@@ -1195,11 +1308,16 @@ class TestApp(QMainWindow):
             except queue.Empty:
                 break
             self.handle(line)
+            if self.align:
+                self.align["bench"].feed(line)
+        if self.align:
+            self.poll_align()
 
     def handle(self, line):
         if not line:
             return
         head = line.split()[0]
+        quiet = self.align is not None and line.startswith(ALIGN_TRAFFIC)
         if head == "STATUS":
             f = parse_fields(line)
             try:
@@ -1212,7 +1330,7 @@ class TestApp(QMainWindow):
             return
         if head == "PD":
             self.handle_pd(line)
-            if not self.live_chk.isChecked():
+            if not self.live_chk.isChecked() and not quiet:
                 self.log(line)
             return
         if head == "INFO":
@@ -1256,7 +1374,99 @@ class TestApp(QMainWindow):
             self.show_adc(False)
             self.live_chk.setChecked(False)
         tag = "err" if head == "ERR" else "warn" if head == "WARN" else None
-        self.log(line, tag)
+        if not quiet:
+            self.log(line, tag)
+
+    # ── auto-align ──────────────────────────────────────────────────────────
+    def fiber_changed(self, i):
+        self.align_cal = None               # walk directions are per fiber
+        if isinstance(self.link, SimLink):
+            self.send(f"SIM FIBER {SimLink.FIBERS[i]}")
+
+    def set_aligning(self, on):
+        self.align_btn.setText("Stop" if on else "Align")
+        for w in (self.axes_box, self.motors_box, self.fiber_box):
+            w.setEnabled(not on)
+
+    def toggle_align(self):
+        if self.align:
+            self.align["bench"].abort.set()
+            return
+        if not self.link:
+            return
+        try:
+            from bench_twin import Aligner, Bench, Optics, make_plan
+            from bench_twin.protocol_bench import Aborted, ProtocolBench
+        except ImportError as e:
+            return self.log(f"Align needs numpy ({e}): py -3 -m pip install -r tools/requirements.txt", "err")
+        fiber = SimLink.FIBERS[self.fiber_box.currentIndex()]
+        cal = self.align_cal
+        plan = cal["plan"] if cal else make_plan(Bench(Optics(fiber=fiber)))
+        bench = ProtocolBench(self.link.send)
+        msgs = queue.Queue()
+        restore = [f"SPEED ALL {self.rpm_box.value():g}", f"ACCEL ALL {self.acc_box.value():g}", "DISABLE ALL"]
+        link = self.link
+        self.align = {"bench": bench, "msgs": msgs, "fiber": fiber}
+        self.set_aligning(True)
+        if not self.laser_on:
+            self.send("LASER ON")
+        self.log(f"align: {'recovering' if cal else 'first run for ' + fiber + ': finding light, then calibrating'}",
+                 "info")
+
+        def work():
+            try:
+                bench.start()
+                bench.command("ENABLE ALL", "OK ENABLE")      # no enable settle between steps
+                al = Aligner(bench, plan, say=lambda t: msgs.put(("info", "align: " + t, None)))
+                if cal:
+                    al.good = cal["good"]
+                    res = al.recover()
+                else:
+                    res = al.first_align()
+                msgs.put(("done", res, {"plan": al.plan, "good": al.good} if res.found else None))
+            except Aborted:
+                msgs.put(("stopped", None, None))
+            except Exception as e:           # a timeout or an ERR from the controller
+                msgs.put(("error", str(e), None))
+            finally:
+                try:
+                    for line in restore:
+                        link.send(line)
+                except Exception:
+                    pass
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def poll_align(self):
+        while True:
+            try:
+                kind, value, cal = self.align["msgs"].get_nowait()
+            except queue.Empty:
+                return
+            if kind == "info":
+                self.log(value, "info")
+                continue
+            if kind == "done":
+                res = value
+                if not res.found:
+                    self.log("align: no light found within the search range. Get some light on the output "
+                             "photodiode by hand and try again.", "warn")
+                else:
+                    if cal:
+                        self.align_cal = cal
+                    good = self.align_cal["good"] if self.align_cal else res.ratio
+                    self.log(f"align: done in {res.seconds:.1f} s ({res.moves} moves, {res.reads} readings): "
+                             f"ratio {res.ratio:.4f}, {res.ratio / good:.1%} of the calibrated peak",
+                             None if res.ok else "warn")
+            elif kind == "stopped":
+                self.log("align: stopped", "warn")
+            else:
+                self.log(f"align: {value}", "err")
+            self.align = None
+            self.set_aligning(False)
+            self.send("INFO")
+            self.pd_resync()
+            return
 
     def show_laser(self, on):
         self.laser_on = on
