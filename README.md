@@ -48,6 +48,7 @@ firmware/optics_bench/ Arduino IDE sketch for the ESP32
   src/comms/           Serial protocol to the host
 host/ros2_ws/src/      ROS 2 packages for the Jetson
 tools/                 Bench scripts: calibration, hysteresis tests, plotting
+  bench_twin/          Simulator of the bench and the auto-align routine
 ```
 
 ## Building the firmware
@@ -89,7 +90,9 @@ py -3 tools/test_gui.py --sim    # try it without hardware
 - **Hold-to-jog** (the double arrows) keeps a motor running while the button is held. The firmware stops it by itself if the panel stops refreshing the jog, so a crashed GUI can't run a motor to its limit.
 - **Keys:** arrows move M1 (Left/Right = M1X, Down/Up = M1Y), A/D and S/W move M2X and M2Y by the selected step, L toggles the laser, Esc stops everything.
 - **Diag** shows the TMC2209 status (current, StealthChop, overtemperature, short and open-load flags). A driver that doesn't answer on the UART shows a red dot and refuses to move.
-- **Photodiodes.** Tick **Live** to stream the reference and output photodiode voltages (5 to 50 readings a second, each the average of all ADC samples since the last one). The panel shows each voltage with its photocurrent and optical power, the output/reference ratio with the best ratio seen and the motor positions where it happened, and a rolling plot (log scale optional). **Measure dark** switches the laser off briefly, records the offsets and subtracts them from then on. **ADC range** fixes the ADS1115 gain instead of auto-ranging, and **Save CSV** writes up to the last 10 minutes of readings. In `--sim` the output rises as you jog the mirrors toward a hidden best position.
+- **Auto-align.** Pick the fiber on the bench and press **Align**. It finds the light, then peaks the out/ref ratio by steering with M2 and walking M1 and M2 together (see [Bench twin](#bench-twin-simulator)). The first run for a fiber also measures the walk directions. Later runs recover from wherever the beam is, for example after a knock. If there is no light on the output photodiode, it first searches with M2 up to 0.4 turn either way. **Stop** or Esc ends it. It uses the same serial commands as the rest of the panel, but it has only been run against the simulator so far.
+- **Photodiodes.** Tick **Live** to stream the reference and output photodiode voltages (5 to 50 readings a second, each the average of all ADC samples since the last one). The panel shows each voltage with its photocurrent and optical power, the output/reference ratio with the best ratio seen and the motor positions where it happened, and a rolling plot (log scale optional). **Measure dark** switches the laser off briefly, records the offsets and subtracts them from then on. **ADC range** fixes the ADS1115 gain instead of auto-ranging, and **Save CSV** writes up to the last 10 minutes of readings.
+- **Simulator.** `--sim` (or the Simulator port) runs the bench twin behind the same serial commands: the photodiodes read what the modelled optics couple into the chosen fiber, with the best position hidden a little way from zero. **Knock M1** and **Knock M2** tilt a mirror by 0.5 to 2 mrad as if bumped, **Unknock** takes the knocks out, and **Peak?** shows where the best position is. Knock, then Align, to watch it recover. The same commands work from the console as `SIM KNOCK M1 [mrad]`, `SIM PEAK`, `SIM FIBER sm630` and `SIM RESET`.
 
 The serial protocol is plain text and documented in `firmware/optics_bench/src/comms/protocol.h`, so the Serial Monitor or the Jetson can use the same commands.
 
@@ -100,6 +103,43 @@ The serial protocol is plain text and documented in `firmware/optics_bench/src/c
 3. Take the hex bits out of the adjusters and nudge each motor by 1/4 turn to check which way positive turns. Flip it with `invert` in `config.h` if needed.
 4. Refit the bits, press "Reset all to 0", and start aligning.
 5. With the ADS1115 and photodiode boards connected, the photodiode panel should show `ADC: ok`. Cover each diode and shine a light on it to check its channel, then press **Measure dark** with the room lit as it will be during runs.
+
+## Bench twin (simulator)
+
+`tools/bench_twin` is a small physical model of the bench, used to size and test the alignment routine before the hardware can. It models:
+
+- **Optics:** the 7 x 3 mm laser beam cut by the 2 mm aperture, the two mirrors 150 mm apart, iris 2 at 3 mm, and the f = 8 mm lens. Single-mode coupling is the overlap of the laser field with the fiber mode, including the aperture's hard edge. Multimode coupling is the share of the focused spot that the core accepts.
+- **Motors:** 100 TPI adjusters on a 17.3 mm lever, a little play in each hex coupling, and a little crosstalk between each mount's two axes.
+- **Photodiodes:** the reference and output photodiodes through the ADS1115, with noise and dark offsets.
+- **Knocks:** a bumped mirror mount tilts by an amount the motors don't know about.
+
+```
+py -3 tools/twin.py                  key numbers (--fiber sm630, mm50 or smf28)
+py -3 tools/twin.py ceiling          best coupling vs aperture size and lens focal length
+py -3 tools/twin.py trials --compare knock a mirror and recover, 50 times, both methods
+py -3 tools/twin.py landscape        redraws the picture below (needs matplotlib)
+py -3 -m unittest discover tools/tests
+```
+
+What it says so far, for the single-mode fiber:
+
+- **The peak is narrow and diagonal.** Moving M2X alone, coupling falls to 1/e within 25 microsteps (1.5 full steps). Moving M1 and M2 together the opposite way ("walking"), it stays up for about 580 microsteps. So in motor coordinates the peak is a valley 23 times longer than it is wide, running diagonally across M1 and M2. Adjusting one motor at a time stalls on its ridge.
+- **Recovery.** The auto-align routine steers with M2 and walks with M1 and M2 together, the way it is done by hand. In 100 simulated knocks of 0.3 to 3 mrad on a random mirror, it got all 100 back above 99.9% of the best coupling, with a median of 19 s and a worst case of 66 s (at 60 RPM and 600 RPM/s). One motor at a time got 59 of 100 back to 90%, and its worst case ended at 41%. Most of the time goes into finding the light again. Knocks of M1 above about 5 mrad can end up outside the search range (7 of 36 in a run of 3 to 6 mrad knocks).
+- **The 2 mm aperture is close to ideal.** With the f = 8 mm lens the best coupling is 83%, against 85% for the best aperture and lens combination tried (2 mm with f = 9 mm). Without the aperture it drops to 25%, because the 7 x 3 mm beam is much bigger than the fiber mode seen at the lens (1.5 mm).
+- **The play in the hex couplings matters.** One degree of play is about 9 microsteps, a third of the single-mode peak's width. The routine therefore approaches every point from the same side.
+
+![Coupling over M1X and M2X](docs/images/twin_landscape.png)
+
+The numbers rest on estimates to replace with bench measurements, all set in `tools/bench_twin/bench.py` and `optics.py`:
+
+| Estimate | Value used | How to measure |
+| --- | --- | --- |
+| Adjuster lever arm | 17.3 mm (from the 24.5 mm motor spacing) | Scan M2X across the peak; the width scales with it |
+| Play per hex coupling | 1 degree (9 microsteps) | Hysteresis test: approach the same point from both sides |
+| Laser beam | 7 x 3 mm across (taken as the 1/e^2 width) | Camera or knife edge |
+| Fiber mode | 4.2 um across (630HP) | Datasheet |
+| Lens clear aperture | 5 mm | The lens listing |
+| Beamsplitter, laser power, polarizer setting | 50/50, 0.9 mW, 30% | Photodiode volts |
 
 ## Status
 
