@@ -70,14 +70,14 @@ Screw terminals on each breakout:
 
 | Terminal | Goes to |
 | --- | --- |
-| + (VMotor) | 12 V supply plus |
-| - (GND) | 12 V supply minus |
+| + (VMotor) | 12 V supply plus (control board: VM plug J1-J4 pin 1, next to the driver) |
+| - (GND) | 12 V supply minus (control board: VM plug J1-J4 pin 2) |
 | 1A / 1B | One motor coil |
 | 2A / 2B | The other motor coil |
 
 DIAG goes high on a driver fault or stall. The firmware doesn't read it yet, and on a hand-wired build it can stay unconnected.
 
-On the control board the terminal row plugs in through a 6-pin male header in the breakout's terminal-block holes, and the motors plug into JST-XH connectors J1-J4 (pin 1 = 1A, 2 = 1B, 3 = 2A, 4 = 2B).
+On the control board each breakout keeps its screw terminals and plugs in by the 10-pin logic header only. The motors wire straight into the breakout's terminals. A 2-wire lead from the carrier's VM plug next to each driver (J1-J4: pin 1 = +12 V, pin 2 = GND) goes to the breakout's + and - terminals.
 
 ## Laser (Quarton VLM-635-32 LPT)
 

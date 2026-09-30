@@ -58,9 +58,9 @@ text(BX + BW / 2, BY + 30, "Control board (100 x 100 mm, 2 layers)", 17, anchor=
 text(BX + BW / 2, BY + 50, "electronics/pcb/control_board", 12, C["mute"], "middle")
 inner = [
     ("A1  ESP32 Feather V2 (plug-in)", "USB-C at the board's top-left edge"),
-    ("U1-U4  TMC2209 breakouts (plug-in)", "UART addresses 0-3 set by the board"),
+    ("U1-U4  TMC2209 breakouts (plug-in, screw terminals kept)", "addresses 0-3 set by the board; terminals face the top/bottom edges"),
     ("A2  ADS1115 (plug-in), address 0x48", "A0 = PD reference, A1 = PD output"),
-    ("12 V input: PTC fuse, Schottky, TVS, 470 uF", "use J5 or J6, not both"),
+    ("12 V input: PTC fuse, Schottky, TVS, 470 uF", "use J5 or J6, not both; J1-J4 feed each driver's VM"),
 ]
 for i, (t1, t2) in enumerate(inner):
     y = BY + 96 + i * 52
@@ -68,8 +68,8 @@ for i, (t1, t2) in enumerate(inner):
     text(BX + 110, y + 18, t2, 12, C["mute"])
 
 # ── Motors (top) ─────────────────────────────────────────────────────────────
-motors = [("J1", "M1X", "mirror M1, X adjuster"), ("J2", "M1Y", "mirror M1, Y adjuster"),
-          ("J3", "M2X", "mirror M2, X adjuster"), ("J4", "M2Y", "mirror M2, Y adjuster")]
+motors = [("U1", "M1X", "mirror M1, X adjuster"), ("U2", "M1Y", "mirror M1, Y adjuster"),
+          ("U3", "M2X", "mirror M2, X adjuster"), ("U4", "M2Y", "mirror M2, Y adjuster")]
 for i, (j, ax, role) in enumerate(motors):
     px = BX + 80 + i * 140
     mx, my = px, 150
@@ -80,13 +80,13 @@ for i, (j, ax, role) in enumerate(motors):
     for k in range(4):
         x = px - 9 + k * 6
         poly([(x, my + 34), (x, BY - 12)], C["motor"], 1.6)
-    plug(px, BY, j, C["motor"], dx=14, dy=-12, anchor="start")
-text(BX + BW + 20, 130, "Motor plugs J1-J4 (JST-XH 4-pin)", 13, C["motor"], weight="bold")
-for i, s in enumerate(["pin 1  1A  } coil A", "pin 2  1B  }", "pin 3  2A  } coil B", "pin 4  2B  }"]):
+    plug(px, BY, f"{j} terminals", C["motor"], dx=14, dy=-12, anchor="start")
+text(BX + BW + 20, 130, "Motors wire into each breakout's screw terminals", 13, C["motor"], weight="bold")
+for i, s in enumerate(["1A  } coil A", "1B  }", "2A  } coil B", "2B  }", "VM +, GND: 2-wire lead from J1-J4 (U1-U4)"]):
     mono(BX + BW + 20, 152 + i * 18, s, 12, C["motor"])
-text(BX + BW + 20, 232, "Find a coil with an ohmmeter (a few ohms between its two wires).", 11, C["mute"])
-text(BX + BW + 20, 248, "Wrong direction? Set invert in config.h instead of rewiring.", 11, C["mute"])
-text(BX + BW + 20, 264, "Plug and unplug motors only with 12 V off.", 11, C["mute"])
+text(BX + BW + 20, 252, "Find a coil with an ohmmeter (a few ohms between its two wires).", 11, C["mute"])
+text(BX + BW + 20, 268, "Wrong direction? Set invert in config.h instead of rewiring.", 11, C["mute"])
+text(BX + BW + 20, 284, "Connect and disconnect motors only with 12 V off.", 11, C["mute"])
 
 # ── Host (left) ──────────────────────────────────────────────────────────────
 rect(40, 330, 300, 170, fill="#e3f2fd")
