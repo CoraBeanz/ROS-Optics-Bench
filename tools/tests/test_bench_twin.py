@@ -3,9 +3,9 @@
     py -3 -m unittest discover tools/tests
 
 The optics checks compare against textbook results; the alignment checks run
-knock-and-recover trials on simulated benches. The last test drives the test
-GUI's simulator over the serial protocol in real time (about 30 s) and is
-skipped without PySide6.
+knock-and-recover trials on simulated benches. The last test drives the
+simulated controller (bench_link.SimLink, the one behind test_gui.py --sim) over
+the serial protocol in real time (about 30 s).
 """
 
 import dataclasses
@@ -134,18 +134,11 @@ class AlignTest(unittest.TestCase):
             self.assertAlmostEqual(al.plan.slope[plane], true, delta=0.03 * abs(true))
 
 
-try:
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-    import test_gui
-except Exception:                       # no PySide6 (or no display libraries)
-    test_gui = None
-
-
-@unittest.skipIf(test_gui is None, "needs PySide6")
 class ProtocolTest(unittest.TestCase):
     def test_align_through_the_gui_simulator(self):
+        from bench_link import AXES, SimLink
         from bench_twin.protocol_bench import ProtocolBench
-        link = test_gui.SimLink(fiber="mm50", seed=4)
+        link = SimLink(fiber="mm50", seed=4)
         pb = ProtocolBench(link.send)
         alive = True
 
@@ -161,7 +154,7 @@ class ProtocolTest(unittest.TestCase):
             link.send("LASER ON")
             link.send("SPEED ALL 120")
             near = link.twin.peak_motor() + np.array([120, -90, -100, 140])
-            for ax, p in zip(test_gui.AXES, near):
+            for ax, p in zip(AXES, near):
                 link.send(f"GOTO {ax} {round(p)}")
             time.sleep(0.5)
             pb.start()

@@ -1,0 +1,11 @@
+# Move mirror motors, in microsteps (3200 per adjuster turn). Targets are
+# clamped to the controller's soft limits.
+string[] axes              # M1X, M1Y, M2X, M2Y; empty means all four, in that order
+int32[] position           # one per axis
+bool relative              # position is a change from where the axis is now
+float64 speed_rpm          # adjuster turns per minute; 0 keeps the current speed
+---
+int32[] position           # all four axes when the move ended
+bool[] hit_limit           # per requested axis: stopped at a soft limit
+---
+int32[] position           # all four axes

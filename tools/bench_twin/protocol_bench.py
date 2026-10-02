@@ -1,7 +1,7 @@
 """The bench interface align.py needs, over the firmware's serial protocol.
 
 Works with anything that takes command lines and hands back reply lines: the
-real ESP32 (tools/test_gui.py SerialLink) or the GUI's simulator (SimLink).
+real ESP32 (bench_link.SerialLink) or the simulator (bench_link.SimLink).
 The caller passes every received line to feed(); the aligner runs in its own
 thread and blocks here until the replies it needs arrive.
 
