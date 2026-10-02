@@ -46,8 +46,9 @@ firmware/optics_bench/ Arduino IDE sketch for the ESP32
   src/motion/          TMC2209 drivers, stepping, homing, soft limits
   src/sensing/         ADS1115 reads, photodiode ratio
   src/comms/           Serial protocol to the host
-host/ros2_ws/src/      ROS 2 packages for the Jetson
+host/ros2_ws/          ROS 2 Humble workspace for the Jetson (driver, camera, launch files)
 tools/                 Bench scripts: calibration, hysteresis tests, plotting
+  bench_link.py        Serial and simulator links to the controller, shared by the GUI and ROS
   bench_twin/          Simulator of the bench and the auto-align routine
 ```
 
@@ -141,6 +142,15 @@ The numbers rest on estimates to replace with bench measurements, all set in `to
 | Lens clear aperture | 5 mm | The lens listing |
 | Beamsplitter, laser power, polarizer setting | 50/50, 0.9 mW, 30% | Photodiode volts |
 
+## ROS 2 on the Jetson
+
+`host/ros2_ws` holds ROS 2 Humble packages for the Jetson: a driver node that puts the ESP32 (or the simulator) on ROS topics, services and actions, with Align as an action; a node that finds the laser spot on the OV9281; and launch files. They use `tools/bench_link.py` and `tools/bench_twin` directly, so they align the same way the test panel does. Setup and usage: [host/ros2_ws/README.md](host/ros2_ws/README.md).
+
+```
+ros2 launch optics_bench_bringup bench.launch.py                          # on the simulator
+ros2 launch optics_bench_bringup bench.launch.py port:=/dev/optics_bench  # on the bench
+```
+
 ## Status
 
-Bench testing. The firmware drives the laser and the four mirror motors and reads both photodiodes through the ADS1115, and `tools/test_gui.py` is the test panel. The photodiode boards are designed but not yet built or tested. The ROS 2 host side has not been started.
+Bench testing. The firmware drives the laser and the four mirror motors and reads both photodiodes through the ADS1115, and `tools/test_gui.py` is the test panel. The photodiode boards are designed but not yet built or tested. The ROS 2 packages build and run against the simulator on Humble but haven't run on the Jetson, the ESP32 or the camera yet.

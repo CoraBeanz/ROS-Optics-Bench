@@ -1,0 +1,6 @@
+# Gives the Adafruit ESP32 Feather V2 (CH9102 USB-serial, 1a86:55d4) a fixed
+# name, /dev/optics_bench, and lets the dialout group open it. Install with:
+#   sudo cp 99-optics-bench.rules /etc/udev/rules.d/ && sudo udevadm control --reload && sudo udevadm trigger
+# If another CH9102 device is plugged in too, add ATTRS{serial}=="<the Feather's serial>"
+# (from `udevadm info -a -n /dev/ttyACM0 | grep serial`).
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d4", SYMLINK+="optics_bench", GROUP="dialout", MODE="0660"

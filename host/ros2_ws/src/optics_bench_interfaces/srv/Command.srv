@@ -1,0 +1,6 @@
+# Send one line of the controller's serial protocol
+# (firmware/optics_bench/src/comms/protocol.h) and return its reply.
+string line
+---
+bool success               # false for an ERR reply, a timeout, or while aligning
+string reply

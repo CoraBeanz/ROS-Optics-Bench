@@ -1,0 +1,8 @@
+# Parameters for the bench driver (optics_bench_driver/driver_node.py).
+# port, sim_fiber and calibration_file can be overridden from the launch command line.
+/bench/bench_driver:
+  ros__parameters:
+    baud: 115200
+    sim_seed: -1                # -1: a different simulated bench every start
+    status_hz: 5.0              # STATUS poll rate
+    pd_hz: 10.0                 # photodiode stream rate while not aligning (max 50)

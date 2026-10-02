@@ -1,0 +1,14 @@
+# Arducam OV9281 (UVC, global shutter, mono) through v4l2_camera. Not tried on
+# the camera yet: check `v4l2-ctl --list-formats-ext -d /dev/video0` for the
+# formats it offers and set image_size and pixel_format to match.
+/camera/v4l2_camera:
+  ros__parameters:
+    video_device: /dev/video0
+    image_size: [1280, 800]
+    pixel_format: YUYV
+    output_encoding: yuv422_yuy2   # passed through as is; beam_spot reads the luma
+/camera/beam_spot:
+  ros__parameters:
+    threshold: 0.25
+    min_peak: 0.05
+    every_nth: 1

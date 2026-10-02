@@ -1,0 +1,18 @@
+# Peak the out/ref ratio. The first goal for a fiber finds light, measures the
+# walk directions and records the peak; later goals recover from wherever the
+# beam is, e.g. after a knock. See tools/bench_twin/align.py.
+string fiber               # mm50, smf28 or sm630; empty keeps the last one
+bool recalibrate           # forget this fiber's calibration and start over
+---
+bool success               # back to 90% of the calibrated peak (or calibrated, on a first run)
+bool found_light
+float64 ratio
+float64 fraction_of_peak
+float64 seconds
+uint32 moves
+uint32 reads
+string message
+---
+string stage               # e.g. "peaking", "no light: searching on M2"
+float64 ratio
+int32[] position
