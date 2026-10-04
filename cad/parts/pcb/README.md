@@ -7,6 +7,8 @@ STEP exports of the boards in `electronics/pcb`, for importing into Onshape:
 | `control_board.step` | Control board rev B, 100 x 100 x 1.6 mm, with the parts and the female sockets fitted |
 | `pd_amp.step` | Photodiode amp board, 34.3 x 25.4 x 1.6 mm, with its parts fitted |
 
+`control_board_3d.png` and `pd_amp_3d.png` are 3D renders of each board, for a quick look without a CAD tool.
+
 These parts have no 3D model:
 - The Feather, the TMC2209 breakouts and the ADS1115. Only their sockets are modelled. Adafruit publishes models for the boards themselves.
 - F1, the PTC fuse on the control board.
