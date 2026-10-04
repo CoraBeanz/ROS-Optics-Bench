@@ -485,6 +485,19 @@ class TestApp(QMainWindow):
                                   "runs recover from a knock. Needs the photodiodes. Stop or Esc ends it.")
         self.align_btn.clicked.connect(self.toggle_align)
         g.addWidget(self.align_btn, 0, 3)
+        g.addWidget(QLabel("Search (turns)"), 2, 0, 1, 2)
+        self.search_box = QDoubleSpinBox()
+        self.search_box.setRange(0.1, 3.0)
+        self.search_box.setDecimals(1)
+        self.search_box.setSingleStep(0.1)
+        self.search_box.setValue(0.4)
+        self.search_box.setToolTip("How far Align searches with M2, either way from where M2 is when you\n"
+                                   "press Align, when the output photodiode sees no light. One turn moves\n"
+                                   "the focused spot about 230 um on the fiber face. The search covers a\n"
+                                   "square, so the time grows with the square of this: the log says how\n"
+                                   "many points it will visit. Soft limits still stop any move that\n"
+                                   "would pass them.")
+        g.addWidget(self.search_box, 2, 2, 1, 2)
         self.sim_widgets = []
         for col, m in enumerate(("M1", "M2")):
             b = QPushButton(f"Knock {m}")
@@ -1011,7 +1024,7 @@ class TestApp(QMainWindow):
 
     def set_aligning(self, on):
         self.align_btn.setText("Stop" if on else "Align")
-        for w in (self.axes_box, self.motors_box, self.fiber_box):
+        for w in (self.axes_box, self.motors_box, self.fiber_box, self.search_box):
             w.setEnabled(not on)
 
     def toggle_align(self):
@@ -1021,7 +1034,7 @@ class TestApp(QMainWindow):
         if not self.link:
             return
         try:
-            from bench_twin import Aligner, Bench, Optics, make_plan
+            from bench_twin import Aligner, Bench, Optics, Settings, make_plan
             from bench_twin.protocol_bench import Aborted, ProtocolBench
         except ImportError as e:
             return self.log(f"Align needs numpy ({e}): py -3 -m pip install -r tools/requirements.txt", "err")
@@ -1032,6 +1045,7 @@ class TestApp(QMainWindow):
         msgs = queue.Queue()
         restore = [f"SPEED ALL {self.rpm_box.value():g}", f"ACCEL ALL {self.acc_box.value():g}", "DISABLE ALL"]
         link = self.link
+        search = self.search_box.value()
         self.align = {"bench": bench, "msgs": msgs, "fiber": fiber}
         self.set_aligning(True)
         if not self.laser_on:
@@ -1043,7 +1057,8 @@ class TestApp(QMainWindow):
             try:
                 bench.start()
                 bench.command("ENABLE ALL", "OK ENABLE")      # no enable settle between steps
-                al = Aligner(bench, plan, say=lambda t: msgs.put(("info", "align: " + t, None)))
+                al = Aligner(bench, plan, Settings(search_turns=search),
+                             say=lambda t: msgs.put(("info", "align: " + t, None)))
                 if cal:
                     al.good = cal["good"]
                     res = al.recover()
@@ -1076,7 +1091,7 @@ class TestApp(QMainWindow):
                 res = value
                 if not res.found:
                     self.log("align: no light found within the search range. Get some light on the output "
-                             "photodiode by hand and try again.", "warn")
+                             "photodiode by hand, or raise Search (turns), and try again.", "warn")
                 else:
                     if cal:
                         self.align_cal = cal

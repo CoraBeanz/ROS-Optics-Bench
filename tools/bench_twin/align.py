@@ -120,6 +120,13 @@ def square_spiral(rings):
             yield i, -k
 
 
+def spiral_points(plan, search_turns, usteps_per_rev=3200, spiral_pitch=Settings.spiral_pitch):
+    """How many positions the M2 search visits out to search_turns either way."""
+    reach = search_turns * usteps_per_rev
+    n = [2 * int(reach // (spiral_pitch * c)) + 1 for c in plan.capture]
+    return n[0] * n[1]
+
+
 class Aligner:
     def __init__(self, bench, plan: Plan, settings: Settings = None, say=None):
         self.bench = bench
@@ -243,10 +250,11 @@ class Aligner:
         """Search M2 outward on a grid until the ratio clears the detect level."""
         u = getattr(getattr(self.bench, "mech", None), "usteps_per_rev", 3200)
         thr = self.s.detect_frac * self.good
-        self.say("no light: searching on M2")
         start = self.bench.position.astype(float)
         pitch = self.s.spiral_pitch * np.asarray(self.plan.capture, float)
         reach = self.s.search_turns * u
+        self.say(f"no light: searching M2 up to {self.s.search_turns:g} turn either way "
+                 f"({spiral_points(self.plan, self.s.search_turns, u, self.s.spiral_pitch)} points)")
         for i, j in square_spiral(int(math.ceil(reach / pitch.min()))):
             dx, dy = i * pitch[0], j * pitch[1]
             if abs(dx) > reach or abs(dy) > reach:
