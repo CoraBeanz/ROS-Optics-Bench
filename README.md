@@ -2,6 +2,10 @@
 
 A small, mostly 3D-printed optical bench that couples a red laser into an optical fiber by itself. Knock a mirror out of alignment and it steers its way back to maximum coupling without anyone touching a knob.
 
+![The bench in Onshape](docs/images/bench_cad_overview.png)
+
+The full CAD model is [cad/assemblies/ros_laser_bench_main_assembly.step](cad/assemblies/README.md), exported from Onshape.
+
 ![Top-view bench layout](docs/images/bench_layout.svg)
 
 Parts list: [docs/bom](docs/bom/README.md) (source: `docs/bom/bom.csv`).
@@ -12,6 +16,10 @@ Parts list: [docs/bom](docs/bom/README.md) (source: `docs/bom/bom.csv`).
 - **Actuation:** each mirror's tip and tilt adjusters are turned by a NEMA 8 stepper through a hex bit, giving four motorized axes. Mirrors 150 mm apart control both the beam's angle and its position at the fiber.
 - **Score:** output power divided by reference power, which cancels laser flicker. An optimizer steers the four axes to maximize it.
 - **Mechanics:** everything sits on a doweled, printed base so parts can be removed and replaced repeatably.
+
+![Laser, beamsplitter and the two motor-mirror assemblies](docs/images/bench_cad_mirrors.png)
+
+Laser on the left, then the polarizer and beamsplitter, then M1 and M2, each with two NEMA 8 motors turning its adjusters through brass couplers and hex rods.
 
 ## Phases
 
@@ -33,7 +41,7 @@ Parts list: [docs/bom](docs/bom/README.md) (source: `docs/bom/bom.csv`).
 
 ```
 cad/                   Mechanical CAD (Onshape STEP exports)
-  assemblies/          Full assemblies, e.g. the motor-mirror assembly
+  assemblies/          Full assemblies: the whole bench (ros_laser_bench_main_assembly.step)
   parts/               Individual printed or machined parts
   print/               STL / 3MF files ready to slice
   vendor/              Purchased-part models (motors, mounts, optics)
