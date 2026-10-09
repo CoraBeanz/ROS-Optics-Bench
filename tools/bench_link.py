@@ -289,6 +289,18 @@ class SimLink:
         for l in ([reply] if reply else []) + events:
             _emit(self, l)
 
+    def _halt(self, i):
+        """Stop axis i where it is; the firmware reports where a stopped move ended."""
+        was_moving = self.pos[i] != self.tgt[i]
+        self.tgt[i] = round(self.pos[i])
+        self.pos[i] = self.tgt[i]
+        self.jog_deadline[i] = None
+        if was_moving:
+            p = self.tgt[i]
+            at = self.limited[i] and (p <= self.lo[i] or p >= self.hi[i])
+            self.limited[i] = False
+            self._events.append(f"EVT DONE {AXES[i]} POS={p}" + (" LIMIT" if at else ""))
+
     def _handle(self, t):
         if not t:
             return None
@@ -331,15 +343,7 @@ class SimLink:
             return None
         if c in ("STOP", "HALT"):
             for i in self._axis(a[0] or "ALL", True):
-                was_moving = self.pos[i] != self.tgt[i]
-                self.tgt[i] = round(self.pos[i])
-                self.pos[i] = self.tgt[i]
-                self.jog_deadline[i] = None
-                if was_moving:              # the firmware reports where a stopped move ended
-                    p = self.tgt[i]
-                    at = self.limited[i] and (p <= self.lo[i] or p >= self.hi[i])
-                    self.limited[i] = False
-                    self._events.append(f"EVT DONE {AXES[i]} POS={p}" + (" LIMIT" if at else ""))
+                self._halt(i)
             self._sync_twin()
             return f"OK {c}"
         if c == "ZERO":             # renames the position; nothing moves
@@ -378,7 +382,8 @@ class SimLink:
                 self.en[i] = self.held[i] = c == "ENABLE"
                 self.still_since[i] = time.monotonic()
                 if c == "DISABLE":
-                    self.tgt[i] = round(self.pos[i])
+                    self._halt(i)
+            self._sync_twin()
             return f"OK {c}"
         if c == "DRV":
             i = self._axis(a[0])[0]

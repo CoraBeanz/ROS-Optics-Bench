@@ -1,29 +1,44 @@
 #include "sensing.h"
 
 #include <Wire.h>
-#include <Adafruit_ADS1X15.h>
 #include "../laser/laser.h"
 
 namespace sensing {
 
 namespace {
 
-Adafruit_ADS1115 ads;
 bool found = false;
 
-// ADS1115 gain ranges, coarse to fine. +-6.144 V is left out: the inputs
-// can't go above the 3.3 V supply anyway.
-struct Range { adsGain_t gain; float fsr; };
+// The ADS1115 is driven with plain Wire transactions so that every return
+// code is checked: a sample whose transfer failed is dropped instead of
+// reading as 0 V. Registers per the TI datasheet (SBAS444, 9.6):
+// pointer 0 = conversion result, 1 = config. Config bits: OS (15) = 1 starts
+// a single-shot conversion; MUX (14:12) = 1xx: AINx against GND; PGA (11:9)
+// = 001..101: +-4.096 .. +-0.256 V; MODE (8) = 1: single-shot; DR (7:5) =
+// 111: 860 SPS; COMP_MODE, COMP_POL, COMP_LAT (4:2) = 0 and COMP_QUE (1:0) =
+// 11: comparator off (ALERT/RDY is not wired).
+const uint8_t  REG_CONVERSION  = 0x00;
+const uint8_t  REG_CONFIG      = 0x01;
+const uint16_t CFG_OS_START    = 0x8000;
+const uint16_t CFG_MODE_SINGLE = 0x0100;
+const uint16_t CFG_DR_860SPS   = 0x00E0;
+const uint16_t CFG_COMP_OFF    = 0x0003;
+uint16_t cfgMux(uint8_t ain) { return (uint16_t)((0x4 | ain) << 12); }
+
+// ADS1115 gain ranges, coarse to fine, with their PGA bits. +-6.144 V is
+// left out: the inputs can't go above the 3.3 V supply anyway.
+struct Range { uint16_t pga; float fsr; };
 const Range RANGES[] = {
-  { GAIN_ONE, 4.096f }, { GAIN_TWO, 2.048f }, { GAIN_FOUR, 1.024f },
-  { GAIN_EIGHT, 0.512f }, { GAIN_SIXTEEN, 0.256f },
+  { 0x0200, 4.096f }, { 0x0400, 2.048f }, { 0x0600, 1.024f },
+  { 0x0800, 0.512f }, { 0x0A00, 0.256f },
 };
 const int NUM_RANGES = sizeof(RANGES) / sizeof(RANGES[0]);
 const uint8_t AIN[NUM_CHANNELS] = { PD_REF_CHANNEL, PD_OUT_CHANNEL };
 
 // 860 SPS is a 1.16 ms conversion; the ADS1115's clock is only good to 10 %.
 // Reading the result after a fixed wait saves polling the config register,
-// so each sample costs two short I2C transactions.
+// so each sample costs three short I2C transactions: the config write that
+// starts it, then a pointer write and a 2-byte read of the result.
 const uint32_t CONVERSION_US = 1400;
 // The ratio is reported as "-" with the laser off or the reference under
 // this: a ratio of two dark offsets would look like good coupling.
@@ -33,7 +48,9 @@ int  rangeIdx[NUM_CHANNELS] = { 0, 0 };
 int  fixedIdx = -1;                // -1 = auto-range
 int  channel = REF;
 bool converting = false;
+bool retryWait = false;            // the last sample failed: wait a conversion time before the next try
 uint32_t convStart = 0;
+int  fails = 0;                    // consecutive failed samples
 
 float    latest[NUM_CHANNELS] = { 0, 0 };
 double   sum[NUM_CHANNELS] = { 0, 0 };
@@ -55,9 +72,46 @@ void resetAverages() {
   for (int c = 0; c < NUM_CHANNELS; c++) { sum[c] = 0; count[c] = 0; }
 }
 
+bool writeConfig(uint16_t v) {
+  const uint8_t buf[3] = { REG_CONFIG, (uint8_t)(v >> 8), (uint8_t)(v & 0xFF) };
+  Wire.beginTransmission(ADS1115_ADDR);
+  bool queued = Wire.write(buf, 3) == 3;
+  uint8_t e = Wire.endTransmission();          // always, it also releases the bus lock
+  return queued && e == 0;
+}
+
+bool readRegister(uint8_t reg, uint16_t &out) {
+  Wire.beginTransmission(ADS1115_ADDR);
+  bool queued = Wire.write(reg) == 1;
+  if (Wire.endTransmission() != 0 || !queued) return false;
+  if (Wire.requestFrom((uint8_t)ADS1115_ADDR, (size_t)2) != 2) return false;
+  int hi = Wire.read(), lo = Wire.read();
+  if (hi < 0 || lo < 0) return false;
+  out = (uint16_t)((hi << 8) | lo);
+  return true;
+}
+
+void abortDark();
+
+// A transfer failed: drop the sample and retry the same channel after a
+// conversion time. After ADS_MAX_FAILS in a row the ADC counts as gone; PD
+// (and so the GUI's live view) probes it again.
+void sampleFailed() {
+  converting = false;
+  retryWait = true;
+  convStart = micros();
+  if (++fails < ADS_MAX_FAILS) return;
+  found = false;
+  fails = 0;
+  Serial.println("WARN ADS1115 stopped answering - check its I2C wiring and 3V3 (PD retries it)");
+  abortDark();
+}
+
 void startConversion() {
-  ads.setGain(RANGES[rangeIdx[channel]].gain);
-  ads.startADCReading(MUX_BY_CHANNEL[AIN[channel]], /*continuous=*/false);
+  uint16_t cfg = CFG_OS_START | cfgMux(AIN[channel]) | RANGES[rangeIdx[channel]].pga |
+                 CFG_MODE_SINGLE | CFG_DR_860SPS | CFG_COMP_OFF;
+  if (!writeConfig(cfg)) { sampleFailed(); return; }
+  retryWait = false;
   convStart = micros();
   converting = true;
 }
@@ -71,8 +125,11 @@ void accept(int c, float v) {
 }
 
 void finishConversion() {
-  int16_t raw = ads.getLastConversionResults();
   converting = false;
+  uint16_t reg;
+  if (!readRegister(REG_CONVERSION, reg)) { sampleFailed(); return; }
+  fails = 0;
+  int16_t raw = (int16_t)reg;
   int c = channel;
   int r = rangeIdx[c];
   float v = raw * RANGES[r].fsr / 32768.0f;
@@ -97,6 +154,17 @@ void finishDark() {
   haveDark = true;
   laser::set(laserWasOn);
   Serial.println("OK PD DARK REF=" + volts(dark[REF]) + " OUT=" + volts(dark[OUT]));
+}
+
+// The ADC went away during PD DARK: put the laser back and answer the
+// pending PD DARK with an ERR instead of leaving it waiting.
+void abortDark() {
+  if (darkPhase == DARK_IDLE) return;
+  bool replyOwed = darkPhase != DARK_RESTORE;     // RESTORE: OK PD DARK was already sent
+  darkPhase = DARK_IDLE;
+  laser::set(laserWasOn);
+  resetAverages();
+  if (replyOwed) Serial.println("ERR PD DARK aborted - ADS1115 stopped answering");
 }
 
 void updateDark() {
@@ -130,16 +198,17 @@ void updateDark() {
 
 void begin() {
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
+  Wire.setTimeOut(I2C_TIMEOUT_MS);   // default 50 ms: a stuck bus would hold up stepping that long per transfer
   probe();
 }
 
 bool probe() {
   converting = false;
-  found = ads.begin(ADS1115_ADDR, &Wire);
-  if (found) {
-    Wire.setClock(I2C_CLOCK_HZ);
-    ads.setDataRate(RATE_ADS1115_860SPS);
-  }
+  retryWait = false;
+  fails = 0;
+  uint16_t cfg;
+  found = readRegister(REG_CONFIG, cfg);   // it acknowledges and its config register reads back
+  if (found) Wire.setClock(I2C_CLOCK_HZ);
   return found;
 }
 
@@ -148,7 +217,8 @@ bool present() { return found; }
 void update() {
   if (!found) return;
   if (converting && micros() - convStart >= CONVERSION_US) finishConversion();
-  if (!converting) startConversion();
+  if (!converting && (!retryWait || micros() - convStart >= CONVERSION_US)) startConversion();
+  if (!found) return;                 // it just stopped answering
   updateDark();
   if (streamRate > 0 && darkPhase == DARK_IDLE) {
     uint32_t now = millis();

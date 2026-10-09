@@ -17,8 +17,8 @@ enum Channel { REF = 0, OUT = 1, NUM_CHANNELS = 2 };
 void begin();       // I2C + ADS1115 probe; the bench runs without it
 void update();      // call every loop(): conversions, dark measurement, streaming
 
-bool present();     // ADS1115 answered at ADS1115_ADDR
-bool probe();       // retry begin() (the board may have been plugged in later)
+bool present();     // ADS1115 answered at ADS1115_ADDR and hasn't failed ADS_MAX_FAILS samples in a row since
+bool probe();       // look for it again (plugged in later, or it stopped answering)
 
 // Mean of the samples since the last report, then starts a new average.
 // Falls back to the latest sample if none arrived in between.

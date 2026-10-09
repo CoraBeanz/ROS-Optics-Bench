@@ -1059,7 +1059,7 @@ class TestApp(QMainWindow):
             self.dark_dot.set_state("ok", "DARK: subtracted")
         elif line.startswith("OK PD DARK CLEARED"):
             self.dark_dot.set_state("off", "DARK: off")
-        elif head == "ERR" and "ADS1115" in line:
+        elif head in ("ERR", "WARN") and "ADS1115" in line:   # not found, or stopped answering
             self.show_adc(False)
             self.live_chk.setChecked(False)
         tag = "err" if head == "ERR" else "warn" if head == "WARN" else None

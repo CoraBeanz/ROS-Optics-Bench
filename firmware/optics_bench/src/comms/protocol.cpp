@@ -27,11 +27,12 @@ bool parseLong(const char *tok, long &out) {
   return end != tok && *end == 0;
 }
 
+// Finite numbers only: strtof also takes "nan" and "inf".
 bool parseFloat(const char *tok, float &out) {
   if (tok == nullptr) return false;
   char *end;
   out = strtof(tok, &end);
-  return end != tok && *end == 0;
+  return end != tok && *end == 0 && isfinite(out);
 }
 
 // Axis argument: an index, ALL (when allowed), or -1 with an ERR already sent.
@@ -91,6 +92,7 @@ void cmdInfo() {
                  " MAX_RPM=" + String(MAX_RPM, 1) + " MAX_MA=" + String(MAX_CURRENT_MA) +
                  " ABS_LIMIT=" + String(lroundf(ABS_LIMIT_TURNS * USTEPS_PER_REV)) +
                  " TRUSTED=" + String(motion::positionsTrusted() ? 1 : 0) +
+                 " TRUST=" + joinAxes([](int i) { return String(motion::positionTrusted(i) ? 1 : 0); }) +
                  " ADC=" + String(sensing::present() ? 1 : 0) +
                  " PD_RF=" + String(PD_REF_TIA_OHMS, 0) + "," + String(PD_OUT_TIA_OHMS, 0) + " PD_RESP=" + String(PD_RESPONSIVITY, 2) +
                  " " + motion::slotMapReport());
@@ -191,8 +193,7 @@ void handle(char *buf) {
     int ax = parseAxis(a1, true);
     if (ax == -1) return;
     if ((ax == ALL && motion::anyMoving()) || (ax != ALL && motion::isMoving(ax))) { err("stop the motor first"); return; }
-    forAxes(ax, [](int i) { motion::setPosition(i, 0); });
-    if (ax == ALL) motion::markPositionsTrusted();   // every axis re-referenced by the operator
+    forAxes(ax, [](int i) { motion::setPosition(i, 0); });   // also re-trusts each axis
     ok("ZERO");
     return;
   }
@@ -236,7 +237,7 @@ void handle(char *buf) {
     long v;
     if (!parseLong(a2, v) || v <= 0) { err("CURRENT needs mA"); return; }
     if (motion::anyMoving()) { err("stop the motors first"); return; }
-    forAxes(ax, [&](int i) { motion::setCurrent(i, (uint16_t)v); });
+    forAxes(ax, [&](int i) { motion::setCurrent(i, (uint16_t)constrain(v, 1L, (long)MAX_CURRENT_MA)); });
     ok("CURRENT=" + String(motion::current(ax == ALL ? 0 : ax)));
     return;
   }
