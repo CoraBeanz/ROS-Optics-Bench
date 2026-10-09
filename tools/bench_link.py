@@ -13,6 +13,7 @@ tools/bench_twin); each imports what it needs when it is opened.
 from __future__ import annotations
 
 import dataclasses
+import math
 import queue
 import random
 import threading
@@ -362,6 +363,8 @@ class SimLink:
             return f"OK LIMITS MIN={lo} MAX={hi}"
         if c in ("SPEED", "ACCEL", "CURRENT"):
             v = float(a[1])
+            if not math.isfinite(v) or v <= 0:      # the firmware refuses nan and inf too
+                return "ERR CURRENT needs mA" if c == "CURRENT" else f"ERR {c} needs a positive number"
             for i in self._axis(a[0], True):
                 if c == "SPEED":
                     self.rpm[i] = min(v, 120.0)
