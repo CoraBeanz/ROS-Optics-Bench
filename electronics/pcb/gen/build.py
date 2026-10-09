@@ -10,6 +10,8 @@ ground pours), ERC, DRC with schematic parity, then fab/<board>/:
   <board>_schematic.pdf
   <board>_top.png       3D render
 Stops with a non-zero exit if ERC or DRC finds an error or the router leaves a net open.
+A board with ERC/DRC errors keeps its previous fab/<board>/ outputs; the reports
+are left in fab/<board>_check/.
 """
 import csv
 import os
@@ -73,9 +75,12 @@ def build(name):
     run(CLI, "sch", "export", "netlist", "--format", "kicadsexpr", "-o", net, sch)
     print(run(KPY, os.path.join(HERE, "make_pcb.py"), name).strip())
     fab = os.path.join(PCB_DIR, "fab", name)
-    shutil.rmtree(fab, ignore_errors=True)
-    os.makedirs(fab)
-    erc, drc = os.path.join(fab, "erc.rpt"), os.path.join(fab, "drc.rpt")
+    # Check first, in a folder of its own: a board with errors must not replace
+    # the last good Gerbers that someone may upload as-is
+    checks = os.path.join(PCB_DIR, "fab", f"{name}_check")
+    shutil.rmtree(checks, ignore_errors=True)
+    os.makedirs(checks)
+    erc, drc = os.path.join(checks, "erc.rpt"), os.path.join(checks, "drc.rpt")
     run(CLI, "sch", "erc", "--severity-error", "-o", erc, sch, check=False)
     run(CLI, "pcb", "drc", "--schematic-parity", "--severity-error", "-o", drc, pcb, check=False)
     m = re.search(r"ERC messages: (\d+)", open(erc, encoding="utf8").read())
@@ -83,6 +88,12 @@ def build(name):
     for kind in ("DRC violations", "unconnected pads", "Footprint errors"):
         errors += count(drc, kind)
     print(f"{name}: ERC/DRC errors: {errors}")
+    if errors:
+        print(f"{name}: fab outputs NOT updated; {fab} still holds the last good build. Reports: {erc}, {drc}")
+        return errors
+    shutil.rmtree(checks)
+    shutil.rmtree(fab, ignore_errors=True)
+    os.makedirs(fab)
     gdir = os.path.join(fab, "gerbers")
     os.makedirs(gdir)
     run(CLI, "pcb", "export", "gerbers", "--layers",
@@ -101,9 +112,6 @@ def build(name):
     run(CLI, "pcb", "render", "--side", "top", "--quality", "high", "--width", "1600", "--height", "1600",
         "--background", "opaque", "-o", os.path.join(fab, f"{name}_top.png"), pcb)
     bom(name, board, os.path.join(fab, f"{name}_bom.csv"))
-    if not errors:                                   # keep the reports only when they have something to say
-        os.remove(erc)
-        os.remove(drc)
     return errors
 
 

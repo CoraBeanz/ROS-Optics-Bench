@@ -1,5 +1,6 @@
 """The controller layer against the simulated controller (no ROS needed)."""
 
+import threading
 import time
 
 import pytest
@@ -11,7 +12,7 @@ add_tools_to_path()
 from bench_link import SimLink  # noqa: E402
 
 from optics_bench_driver.controller import (  # noqa: E402
-    CalibrationStore, Controller, ControllerError, parse_pd, reply_matcher,
+    Busy, CalibrationStore, Controller, ControllerError, parse_pd, reply_matcher,
 )
 
 
@@ -45,6 +46,15 @@ def test_requests_and_errors(ctl):
         ctl.request("GOTO M9X 3")
 
 
+def test_a_jog_error_stays_with_the_jog(ctl):
+    # JOG has no reply unless it fails; its ERR used to land on the next request
+    for _ in range(20):
+        with pytest.raises(ControllerError):
+            ctl.request("JOG M9X +")
+        assert ctl.request("STATUS").startswith("STATUS ")
+    assert ctl.request("JOG M1X +") == ""
+
+
 def test_move_to(ctl):
     ctl.request("SPEED ALL 120")
     pos, limited = ctl.move_to({"M1X": 400, "M2Y": -300})
@@ -63,11 +73,31 @@ def test_align_then_recover(ctl, tmp_path):
     t0 = time.monotonic()
     res, frac = ctl.align("mm50", store)
     assert res.found and res.ok, res
-    assert store.get("mm50") is not None
-    assert CalibrationStore(str(tmp_path / "cal.json")).get("mm50")[0] == store.get("mm50")[0]
+    assert store.get("mm50") is None                     # the simulator keeps its own calibration
+    assert store.get("sim/mm50") is not None
+    assert CalibrationStore(str(tmp_path / "cal.json")).get("sim/mm50")[0] == store.get("sim/mm50")[0]
     with ctl.link.lock:
         ctl.link.twin.knock(1, 0.8)
     res, frac = ctl.align("mm50", store)
     assert res.ok and frac > 0.9, (res, frac)
     assert float(ctl.link.twin.coupling() / ctl.link.twin.best_coupling()) > 0.95
     assert time.monotonic() - t0 < 300
+
+
+def test_calibration_store_survives_a_damaged_file(tmp_path):
+    bad = tmp_path / "cal.json"
+    bad.write_text("{not json")
+    assert CalibrationStore(str(bad)).get("mm50") is None
+    bad.write_text('{"mm50": {"plan": {"narrow": [1, 2]}, "good": 0.5}}')   # another version's fields
+    assert CalibrationStore(str(bad)).get("mm50") is None
+
+
+def test_align_refused_while_a_move_runs(ctl, tmp_path):
+    ctl.request("SPEED ALL 5")
+    done = threading.Event()
+    threading.Thread(target=lambda: (ctl.move_to({"M2X": 2000}), done.set()), daemon=True).start()
+    time.sleep(0.3)
+    with pytest.raises(Busy):
+        ctl.align("mm50", CalibrationStore(str(tmp_path / "cal.json")))
+    ctl.request("STOP ALL")
+    assert done.wait(5)                                  # the stopped move reports EVT DONE and ends

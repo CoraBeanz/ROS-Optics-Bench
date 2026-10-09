@@ -8,10 +8,12 @@ firmware/optics_bench/src/comms/protocol.h).
     python test_gui.py                 # pick the ESP32's COM port and Connect
     python test_gui.py --sim           # no hardware: a simulated controller
 
-Keyboard (when no text box has focus), one step of the selected size per press:
+Keyboard (when no text box or the console has focus, and not while Align
+runs), one step of the selected size per press:
     Left/Right  M1X -/+      Down/Up  M1Y -/+
     A/D         M2X -/+      S/W      M2Y -/+
     L           laser on/off Esc      stop all motors
+Holding a key repeats only the 1 microstep and 1 full step sizes.
 
 The photodiode panel shows the reference and output photodiode voltages from
 the ADS1115, the output/reference ratio, and a rolling plot of both.
@@ -28,10 +30,10 @@ import time
 
 from collections import deque
 
-from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, QTimer
+from PySide6.QtCore import QEvent, QPointF, QRectF, QSettings, Qt, QTimer
 from PySide6.QtGui import QColor, QFont, QPainter, QPalette, QPen, QPolygonF, QTextCursor
 from PySide6.QtWidgets import (
-    QAbstractSpinBox, QApplication, QCheckBox, QComboBox, QDoubleSpinBox,
+    QAbstractScrollArea, QAbstractSpinBox, QApplication, QCheckBox, QComboBox, QDoubleSpinBox,
     QFileDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
     QMainWindow, QMessageBox, QPushButton, QSpinBox, QStatusBar, QTextEdit,
     QVBoxLayout, QWidget,
@@ -49,6 +51,8 @@ UM_PER_TURN = 254.0          # 100 TPI adjuster screw
 POLL_MS = 150                # STATUS poll period
 JOG_REPEAT_MS = 150          # JOG keep-alive period (firmware times out at 400 ms)
 
+FEATHER_USB = (0x1A86, 0x55D4)   # the Feather ESP32 V2's CH9102 USB serial chip
+
 K = Qt.Key
 KEYS = {
     K.Key_Left: (0, -1), K.Key_Right: (0, 1), K.Key_Down: (1, -1), K.Key_Up: (1, 1),
@@ -62,7 +66,7 @@ KEYS = {
 
 STEP_SIZES = [  # label, turns
     ("1 microstep", None),
-    ("1 full step (1.3 um)", 1 / 200),
+    ("1 full step (1.3 um)", 1 / 200),   # this one and smaller repeat while a key is held
     ("10 steps (12.7 um)", 10 / 200),
     ("1/10 turn (25 um)", 0.1),
     ("1/4 turn (64 um)", 0.25),
@@ -369,6 +373,7 @@ class TestApp(QMainWindow):
         self.pd_peak = None
         self.align = None                    # the running auto-align, if any
         self.align_cal = None                # walk directions measured by the last first run
+        self.settings = QSettings("ROS-Optics-Bench", "test_gui")   # fiber, port, step and search, kept
         self.setWindowTitle("Optics bench test panel")
         self.resize(1180, 960)
 
@@ -392,6 +397,14 @@ class TestApp(QMainWindow):
 
         QApplication.instance().installEventFilter(self)
         self.set_connected(False)
+
+    def saved_index(self, key, default, count):
+        """A combo box index kept from the last session, or default if it no longer fits."""
+        try:
+            i = int(self.settings.value(key, default))
+        except (TypeError, ValueError):
+            return default
+        return i if 0 <= i < count else default
 
     # ── layout ──────────────────────────────────────────────────────────────
     def _build_connection_bar(self):
@@ -465,14 +478,17 @@ class TestApp(QMainWindow):
         v = QVBoxLayout(st)
         self.step_box = QComboBox()
         self.step_box.addItems([label for label, _ in STEP_SIZES])
-        self.step_box.setCurrentIndex(2)
+        self.step_box.setCurrentIndex(self.saved_index("step", 2, self.step_box.count()))
+        self.step_box.currentIndexChanged.connect(lambda i: self.settings.setValue("step", i))
         v.addWidget(self.step_box)
         row.addWidget(st)
 
         self.align_box = QGroupBox("Auto-align")
         g = QGridLayout(self.align_box)
         self.fiber_box = QComboBox()
-        self.fiber_box.addItems(["mm50: 50 um multimode", "smf28: practice cable", "sm630: single-mode"])
+        self.fiber_box.addItems(["mm50: 50 um multimode", "smf28: SMF-28 / OS2 single-mode patch cable",
+                                 "sm630: single-mode for 630 nm"])
+        self.fiber_box.setCurrentIndex(self.saved_index("fiber", 0, self.fiber_box.count()))
         self.fiber_box.setToolTip("The fiber on the bench. Align sizes its steps for it, and the simulator\n"
                                   "couples into it (SIM FIBER). Single-mode is the real target: its peak\n"
                                   "is only a couple of full steps wide.")
@@ -490,7 +506,8 @@ class TestApp(QMainWindow):
         self.search_box.setRange(0.1, 3.0)
         self.search_box.setDecimals(1)
         self.search_box.setSingleStep(0.1)
-        self.search_box.setValue(0.4)
+        self.search_box.setValue(self.settings.value("search", 0.4, type=float))
+        self.search_box.valueChanged.connect(lambda v: self.settings.setValue("search", v))
         self.search_box.setToolTip("How far Align searches with M2, either way from where M2 is when you\n"
                                    "press Align, when the output photodiode sees no light. One turn moves\n"
                                    "the focused spot about 230 um on the fiber face. The search covers a\n"
@@ -584,6 +601,7 @@ class TestApp(QMainWindow):
         g.addWidget(self.peak_lbl, 6, 0, 1, 2)
 
         ctl = QGridLayout()
+        self.pd_controls = []                # off while Align owns the photodiodes
         self.live_chk = QCheckBox("Live")
         self.live_chk.setToolTip("PD STREAM: the firmware sends averaged readings at this rate")
         self.live_chk.toggled.connect(self.pd_stream_changed)
@@ -596,14 +614,17 @@ class TestApp(QMainWindow):
         b = QPushButton("Read once")
         b.clicked.connect(lambda: self.send("PD"))
         ctl.addWidget(b, 0, 2)
+        self.pd_controls.append(b)
         b = QPushButton("Measure dark")
         b.setToolTip("PD DARK: laser off, average both channels, laser back as it was.\n"
                      "The offsets (TIA offset + room light) are then subtracted from every reading.")
         b.clicked.connect(lambda: self.send("PD DARK"))
         ctl.addWidget(b, 1, 0, 1, 2)
+        self.pd_controls.append(b)
         b = QPushButton("Clear dark")
         b.clicked.connect(lambda: self.send("PD DARK CLEAR"))
         ctl.addWidget(b, 1, 2)
+        self.pd_controls.append(b)
         ctl.addWidget(QLabel("ADC range"), 2, 0)
         self.range_box = QComboBox()
         self.range_box.addItems([r if r == "AUTO" else f"±{r} V" for r in PD_RANGES])
@@ -611,6 +632,7 @@ class TestApp(QMainWindow):
                                   "a fixed range avoids range switches during a scan.")
         self.range_box.currentIndexChanged.connect(lambda i: self.send(f"PD RANGE {PD_RANGES[i]}"))
         ctl.addWidget(self.range_box, 2, 1, 1, 2)
+        self.pd_controls += [self.live_chk, self.rate_box, self.range_box]
         b = QPushButton("Reset peak")
         b.clicked.connect(self.reset_peak)
         ctl.addWidget(b, 3, 0)
@@ -670,6 +692,7 @@ class TestApp(QMainWindow):
         b = QPushButton("Send")
         b.clicked.connect(self.send_raw)
         row.addWidget(b)
+        self.cmd_widgets = [self.cmd_edit, b]
         v.addLayout(row)
         return box
 
@@ -681,9 +704,21 @@ class TestApp(QMainWindow):
         if key == Qt.Key.Key_Escape:
             self.stop_all()
             return True
-        if isinstance(QApplication.focusWidget(), (QLineEdit, QAbstractSpinBox, QComboBox)):
+        mods = Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.AltModifier | Qt.KeyboardModifier.MetaModifier
+        if event.modifiers() & mods:         # Ctrl+A, Ctrl+C, ... belong to the widget
             return False
+        focus = QApplication.focusWidget()
+        if isinstance(focus, (QLineEdit, QAbstractSpinBox, QComboBox, QAbstractScrollArea)) or \
+                (focus is not None and isinstance(focus.parent(), QAbstractScrollArea)):
+            return False                     # text boxes, and the console (arrows scroll it)
+        if key in KEYS or key == Qt.Key.Key_L:
+            if self.align:                   # Align owns the motors and the laser until it ends
+                return True
         if key in KEYS:
+            # A held key repeats only the small steps; a big step per repeat
+            # would queue turns of travel behind the key
+            if event.isAutoRepeat() and STEP_SIZES[self.step_box.currentIndex()][1] not in (None, 1 / 200):
+                return True
             i, d = KEYS[key]
             self.nudge(i, d)
             return True
@@ -694,16 +729,21 @@ class TestApp(QMainWindow):
 
     # ── connection ──────────────────────────────────────────────────────────
     def refresh_ports(self):
-        current = self.port_box.currentText()
-        ports = ["Simulator"]
+        current = self.port_box.currentText() or self.settings.value("port", "", type=str)
+        ports, feather = ["Simulator"], None
         if serial is not None:
-            ports = [f"{p.device} - {p.description}" for p in serial.tools.list_ports.comports()] + ports
+            found = serial.tools.list_ports.comports()
+            ports = [f"{p.device} - {p.description}" for p in found] + ports
+            feather = next((f"{p.device} - {p.description}" for p in found
+                            if (p.vid, p.pid) == FEATHER_USB), None)
         self.port_box.clear()
         self.port_box.addItems(ports)
         if self.sim:
             self.port_box.setCurrentText("Simulator")
         elif current in ports:
             self.port_box.setCurrentText(current)
+        elif feather:                        # nothing chosen yet: the Feather, not whatever is first
+            self.port_box.setCurrentText(feather)
 
     def toggle_connection(self):
         if self.link:
@@ -721,6 +761,7 @@ class TestApp(QMainWindow):
             self.link = None
             QMessageBox.critical(self, "Connect", str(e))
             return
+        self.settings.setValue("port", choice)
         self.set_connected(True)
         self.log(f"connected to {choice}", "info")
         self.send("INFO")
@@ -788,7 +829,7 @@ class TestApp(QMainWindow):
 
     def send_raw(self):
         line = self.cmd_edit.text().strip()
-        if line:
+        if line and not self.align:
             self.send(line)
             self.cmd_edit.clear()
 
@@ -797,7 +838,8 @@ class TestApp(QMainWindow):
         return 1 if turns is None else max(1, round(turns * self.usteps_per_rev))
 
     def nudge(self, i, direction):
-        self.send(f"MOVE {AXES[i]} {direction * self.step_usteps()}")
+        if not self.align:
+            self.send(f"MOVE {AXES[i]} {direction * self.step_usteps()}")
 
     def start_jog(self, i, direction):
         if not self.link:
@@ -839,7 +881,8 @@ class TestApp(QMainWindow):
             self.send("INFO")
 
     def toggle_laser(self):
-        self.send(f"LASER {'OFF' if self.laser_on else 'ON'}")
+        if not self.align:
+            self.send(f"LASER {'OFF' if self.laser_on else 'ON'}")
 
     def apply_settings(self):
         self.send(f"SPEED ALL {self.rpm_box.value():g}")
@@ -947,8 +990,6 @@ class TestApp(QMainWindow):
             except queue.Empty:
                 break
             self.handle(line)
-            if self.align:
-                self.align["bench"].feed(line)
         if self.align:
             self.poll_align()
 
@@ -994,11 +1035,20 @@ class TestApp(QMainWindow):
             if "ADC" in f:
                 self.show_adc(f["ADC"] == "1")
             if f.get("TRUSTED") == "0":
-                self.log("positions may be off: power was lost during a move", "warn")
-                self.statusBar().showMessage("⚠ Positions may be off: power was lost during a move")
-        elif head == "READY":
-            self.send("INFO")  # the board rebooted
-            self.pd_resync()
+                trust = f.get("TRUST", "").split(",")
+                lost = [ax for ax, t in zip(AXES, trust) if t == "0"]
+                which = ", ".join(lost) if lost and len(trust) == len(AXES) else "some motors"
+                text = (f"Positions may be off on {which}: power was lost mid-move, or a driver had no "
+                        "power while it moved. Reset to 0 clears it once the position is right again.")
+                self.log(text, "warn")
+                self.statusBar().showMessage("⚠ " + text)
+        elif head == "READY":                  # the board rebooted
+            if self.align:                     # its positions and settings are gone: Align can't go on
+                self.log("align: the controller rebooted, stopping", "err")
+                self.align["bench"].abort.set()
+            else:
+                self.pd_resync()
+            self.send("INFO")
         elif head == "LINK_ERROR":
             self.log(line, "err")
             self.disconnect()
@@ -1018,13 +1068,17 @@ class TestApp(QMainWindow):
 
     # ── auto-align ──────────────────────────────────────────────────────────
     def fiber_changed(self, i):
+        self.settings.setValue("fiber", i)
         self.align_cal = None               # walk directions are per fiber
         if isinstance(self.link, SimLink):
             self.send(f"SIM FIBER {SimLink.FIBERS[i]}")
 
     def set_aligning(self, on):
+        """Align owns the motors, the laser and the photodiodes while it runs: a
+        stray PD, MOVE or LASER would shift its readings or positions."""
         self.align_btn.setText("Stop" if on else "Align")
-        for w in (self.axes_box, self.motors_box, self.fiber_box, self.search_box):
+        for w in [self.axes_box, self.motors_box, self.fiber_box, self.search_box, self.laser_btn,
+                  *self.pd_controls, *self.cmd_widgets]:
             w.setEnabled(not on)
 
     def toggle_align(self):
@@ -1047,6 +1101,9 @@ class TestApp(QMainWindow):
         link = self.link
         search = self.search_box.value()
         self.align = {"bench": bench, "msgs": msgs, "fiber": fiber}
+        # Replies go straight from the link's reader thread to the aligner;
+        # going through the 30 ms drain timer would add up to 30 ms per reply
+        link.listeners.append(bench.feed)
         self.set_aligning(True)
         if not self.laser_on:
             self.send("LASER ON")
@@ -1064,12 +1121,17 @@ class TestApp(QMainWindow):
                     res = al.recover()
                 else:
                     res = al.first_align()
-                msgs.put(("done", res, {"plan": al.plan, "good": al.good} if res.found else None))
+                start = al.trace[0][2] if al.trace else None
+                # Only a first run that ends ok measured a calibration worth keeping
+                new_cal = {"plan": al.plan, "good": al.good} if res.ok and not cal else None
+                msgs.put(("done", (res, start, not cal), new_cal))
             except Aborted:
                 msgs.put(("stopped", None, None))
             except Exception as e:           # a timeout or an ERR from the controller
                 msgs.put(("error", str(e), None))
             finally:
+                if bench.feed in link.listeners:
+                    link.listeners.remove(bench.feed)
                 try:
                     for line in restore:
                         link.send(line)
@@ -1088,17 +1150,24 @@ class TestApp(QMainWindow):
                 self.log(value, "info")
                 continue
             if kind == "done":
-                res = value
+                res, start, first = value
                 if not res.found:
                     self.log("align: no light found within the search range. Get some light on the output "
                              "photodiode by hand, or raise Search (turns), and try again.", "warn")
+                elif res.note:                  # light, but not a calibration to keep
+                    self.log(f"align: found a signal but not a usable calibration, so it isn't kept: "
+                             f"{res.note}", "warn")
                 else:
                     if cal:
                         self.align_cal = cal
                     good = self.align_cal["good"] if self.align_cal else res.ratio
+                    began = "" if start is None else f" from {start:.4f}"
                     self.log(f"align: done in {res.seconds:.1f} s ({res.moves} moves, {res.reads} readings): "
-                             f"ratio {res.ratio:.4f}, {res.ratio / good:.1%} of the calibrated peak",
-                             None if res.ok else "warn")
+                             f"ratio{began} to {res.ratio:.4f}, " +
+                             ("this is now the calibrated peak" if first else f"{res.ratio / good:.1%} of the "
+                              "calibrated peak"), None if res.ok else "warn")
+                    if start is not None and res.ratio < start:
+                        self.log("align: it ended lower than it started: is the right fiber selected?", "warn")
             elif kind == "stopped":
                 self.log("align: stopped", "warn")
             else:

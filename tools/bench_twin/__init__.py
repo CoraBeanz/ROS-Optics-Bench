@@ -8,8 +8,8 @@ is modelled and which numbers are assumptions.
 
 from .optics import FIBERS, Optics, OpticalModel
 from .bench import AXES, Bench, Mechanics, Reading, Sensors, randomized
-from .align import Aligner, Plan, Result, Settings, make_plan, spiral_points
+from .align import Aligner, NoReference, Plan, Result, Settings, make_plan, spiral_points
 
-__all__ = ["AXES", "FIBERS", "Aligner", "Bench", "Mechanics", "Optics", "OpticalModel", "Plan",
+__all__ = ["AXES", "FIBERS", "Aligner", "Bench", "Mechanics", "NoReference", "Optics", "OpticalModel", "Plan",
            "Reading", "Result", "Sensors", "Settings", "make_plan", "randomized",
            "spiral_points"]

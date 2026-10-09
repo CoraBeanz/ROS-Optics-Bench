@@ -80,7 +80,7 @@ That runs, in order:
 5. ERC, and DRC with schematic parity.
 6. The fab outputs in `fab/`.
 
-It stops with an error if ERC or DRC finds anything or a net is left unrouted. The router is a small A* grid router in `gen/route.py`.
+It stops with an error if ERC or DRC finds anything or a net is left unrouted. A board with ERC or DRC errors keeps its previous `fab/<board>/` files, so the zip there is always the last good build; the reports go to `fab/<board>_check/`. The router is a small A* grid router in `gen/route.py`.
 
 To open a board in KiCad and edit it by hand, open `control_board/control_board.kicad_pro`. A rerun of `build.py` overwrites manual edits, so once the board is being edited by hand, stop regenerating it.
 

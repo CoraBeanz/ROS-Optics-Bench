@@ -82,12 +82,20 @@ class ProtocolBench:
         return self._wait(lambda l: l if l.startswith(reply_prefix) else None, reply_prefix)
 
     def start(self):
-        """Stop PD streaming, drop old lines and learn where the motors are."""
+        """Stop PD streaming, drop old lines and learn where the motors are,
+        once any move still running (a nudge just before Align) has ended."""
         self.command("PD STREAM OFF", "OK PD STREAM")     # streamed lines sent before it are gone now
         while not self.lines.empty():
             self.lines.get_nowait()
-        line = self.command("STATUS", "STATUS")
-        self.motor = np.array([float(v) for v in _fields(line)["POS"].split(",")])
+        deadline = time.monotonic() + self.timeout_s
+        while True:
+            f = _fields(self.command("STATUS", "STATUS"))
+            if "1" not in f.get("MOV", "").split(","):
+                break
+            if time.monotonic() > deadline:
+                raise TimeoutError("the motors are still moving")
+            self._sleep(0.05)
+        self.motor = np.array([float(v) for v in f["POS"].split(",")])
 
     def move_to(self, target, speed_rpm=None, accel_rpm_s=None):
         if speed_rpm and (speed_rpm, accel_rpm_s) != self._motion:

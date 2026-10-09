@@ -100,6 +100,8 @@ class Controller:
         self._listeners_lock = threading.Lock()
         self._request_lock = threading.Lock()
         self._align_lock = threading.Lock()
+        self._moves = 0                      # move_to calls in progress
+        self._moves_lock = threading.Lock()
         self.aligning = False
         self.align_abort = None
         self.alive = True
@@ -148,9 +150,11 @@ class Controller:
         """Send one command line and return its reply. Raises ControllerError
         for an ERR reply or no reply within timeout."""
         prefix = reply_matcher(line)
-        if prefix is None:
-            self.link.send(line)
-            return ""
+        # The firmware answers JOG only on error. A PING right behind it fences
+        # that error off: an ERR before OK PONG is the JOG's, not the next request's
+        fence = prefix is None
+        if fence:
+            prefix = "OK PONG"
         got = queue.Queue()
 
         def listen(l):
@@ -161,8 +165,12 @@ class Controller:
             self.add_listener(listen)
             try:
                 self.link.send(line)
+                if fence:
+                    self.link.send("PING")
                 try:
                     reply = got.get(timeout=timeout)
+                    if fence and reply.startswith("ERR"):
+                        got.get(timeout=timeout)     # its PONG, so a later PING doesn't take it
                 except queue.Empty:
                     raise ControllerError(f"no reply to {line!r} within {timeout:g} s")
             finally:
@@ -170,7 +178,7 @@ class Controller:
         self.connected = True
         if reply.startswith("ERR"):
             raise ControllerError(reply[4:])
-        return reply
+        return "" if fence else reply
 
     def status(self) -> Status:
         return parse_status(self.request("STATUS"))
@@ -182,9 +190,18 @@ class Controller:
                 timeout=300.0, on_progress=None):
         """Move axes ({'M2X': 100, ...}) and wait until they stop. Returns
         (positions of all four axes, {axis: stopped at a soft limit})."""
-        if self.aligning:
-            raise Busy("aligning: stop the alignment first")
         targets = {self._axis(a): int(v) for a, v in targets.items()}
+        with self._moves_lock:               # counted before the check, so align() sees it
+            self._moves += 1
+        try:
+            if self.aligning:
+                raise Busy("aligning: stop the alignment first")
+            return self._move_to(targets, relative, speed_rpm, abort, timeout, on_progress)
+        finally:
+            with self._moves_lock:
+                self._moves -= 1
+
+    def _move_to(self, targets, relative, speed_rpm, abort, timeout, on_progress):
         if speed_rpm and speed_rpm > 0:
             self.request(f"SPEED ALL {speed_rpm:g}")
         done = queue.Queue()
@@ -250,21 +267,33 @@ class Controller:
             raise ControllerError(f"fiber must be one of {', '.join(FIBERS)}")
         if not self._align_lock.acquire(blocking=False):
             raise Busy("already aligning")
+        self.aligning = True                 # set before the check, so move_to() sees it
+        with self._moves_lock:
+            moving = self._moves > 0
+        if moving:
+            self.aligning = False
+            self._align_lock.release()
+            raise Busy("a move is in progress: wait for it to finish or stop it")
         say = say or (lambda text: None)
         bench = ProtocolBench(self.link.send)
         if abort is not None:
             bench.abort = abort
         self.align_abort = bench.abort
         self.add_listener(bench.feed)
-        self.aligning = True
         restore = ["DISABLE ALL"]
         try:
             info = self.info()
+            if any(self.status().moving):    # the aligner would start from a position mid-move
+                restore = []                 # and DISABLE would halt whatever is moving them
+                raise Busy("motors are moving: wait for them to stop")
             restore = [f"SPEED ALL {info['RPM'].split(',')[0]}", f"ACCEL ALL {info['ACCEL'].split(',')[0]}",
                        "DISABLE ALL"]
+            # The simulator's calibration says nothing about the real bench (and
+            # the other way round), so each keeps its own
+            key = f"sim/{fiber}" if info.get("FW") == "sim" else fiber
             if recalibrate:
-                calibration.forget(fiber)
-            cal = calibration.get(fiber)
+                calibration.forget(key)
+            cal = calibration.get(key)
             plan = cal[0] if cal else make_plan(Bench(Optics(fiber=fiber)))
             bench.command("LASER ON", "OK LASER")
             bench.start()
@@ -277,8 +306,10 @@ class Controller:
             else:
                 say(f"first run for {fiber}: finding light, then calibrating")
                 res = al.first_align()
-                if res.found:
-                    calibration.put(fiber, al.plan, al.good)
+                if res.ok:                   # light that calibrated plausibly; res.note says why not
+                    calibration.put(key, al.plan, al.good)
+                elif res.found:
+                    say(f"not keeping this calibration: {res.note}")
             return res, (res.ratio / al.good if al.good > 0 else 0.0)
         except Aborted:
             raise ControllerError("alignment stopped")
@@ -304,8 +335,13 @@ class CalibrationStore:
         self.path = os.path.expanduser(path) if path else ""
         self._data = {}
         if self.path and os.path.isfile(self.path):
-            with open(self.path) as f:
-                self._data = json.load(f)
+            try:
+                with open(self.path) as f:
+                    self._data = json.load(f)
+            except (OSError, ValueError):    # a damaged file means no calibration, not a crash
+                self._data = {}
+            if not isinstance(self._data, dict):
+                self._data = {}
 
     def get(self, fiber):
         from bench_twin import Plan
@@ -313,8 +349,11 @@ class CalibrationStore:
         d = self._data.get(fiber)
         if not d:
             return None
-        plan = Plan(**{k: tuple(v) if isinstance(v, list) else v for k, v in d["plan"].items()})
-        return plan, float(d["good"])
+        try:
+            plan = Plan(**{k: tuple(v) if isinstance(v, list) else v for k, v in d["plan"].items()})
+            return plan, float(d["good"])
+        except (KeyError, TypeError, ValueError, AttributeError):   # written by another version
+            return None
 
     def put(self, fiber, plan, good):
         self._data[fiber] = {"plan": dataclasses.asdict(plan), "good": float(good),

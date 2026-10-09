@@ -3,4 +3,6 @@
 #   sudo cp 99-optics-bench.rules /etc/udev/rules.d/ && sudo udevadm control --reload && sudo udevadm trigger
 # If another CH9102 device is plugged in too, add ATTRS{serial}=="<the Feather's serial>"
 # (from `udevadm info -a -n /dev/ttyACM0 | grep serial`).
-SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d4", SYMLINK+="optics_bench", GROUP="dialout", MODE="0660"
+# ID_MM_DEVICE_IGNORE keeps ModemManager from opening the port to probe it for
+# a modem: the open can reset the ESP32, and its AT commands get ERR replies.
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d4", SYMLINK+="optics_bench", GROUP="dialout", MODE="0660", ENV{ID_MM_DEVICE_IGNORE}="1"
