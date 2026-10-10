@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" role="img" aria-labelledby="t d">
+  <title id="t">Optical path of the bench, seen from above</title>
+  <desc id="d">Schematic top view, not to scale. A 635 nm laser fires right through a 2 mm printed aperture, two crossed polarizers and a beamsplitter whose reflected slice goes to the reference photodiode. Motorized mirror M1 turns the beam up to motorized mirror M2, 150 mm away, which turns it right through iris 1 and iris 2 to an f = 8 mm asphere on a micrometer stage. The asphere focuses the beam into a fixed FC bulkhead, and the fiber loops to the output photodiode; the score is the output reading divided by the reference, and the ratio cancels laser flicker. In phase 1 the OV9281 camera takes the lens's place, and the irises mark the beam axis. Each mirror sits in a kinematic mount whose two 100 TPI adjusters are turned by NEMA 8 motors through brass couplers and 2 mm hex rods. A strip along the bottom gives the design distances along the beam: 15 mm to the aperture, 115 to M1, 150 to M2, 70 to iris 1, 190 to iris 2, 50 to the lens and 8 to the fiber, about 600 mm in all.</desc>
+  <style>
+    text { font-family: ui-sans-serif, -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    .h1 { font-size: 32px; font-weight: 800; fill: #f1f5ff; }
+    .sub { font-size: 17px; fill: #a3acc9; }
+    .lt { font-size: 18px; font-weight: 700; fill: #e6e9f2; }
+    .spec { font-size: 15px; font-weight: 600; fill: #7dd3fc; }
+    .ls { font-size: 15px; fill: #8b93b0; }
+    .small { font-size: 14px; fill: #8b93b0; font-style: italic; }
+    .mname { font-size: 20px; font-weight: 800; fill: #e6e9f2; }
+    .mono { font-size: 14.5px; fill: #e6e9f2; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+  </style>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101a3a"/><stop offset="0.55" stop-color="#0a1024"/><stop offset="1" stop-color="#060914"/>
+    </linearGradient>
+    <pattern id="holes" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.7" fill="#1d2955"/>
+    </pattern>
+    <radialGradient id="fade" cx="0.55" cy="0.5" r="0.7">
+      <stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <mask id="holesMask"><rect width="1280" height="800" fill="url(#fade)"/></mask>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3.2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="haze" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>
+    <filter id="softglow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2b3a63"/><stop offset="1" stop-color="#18213f"/>
+    </linearGradient>
+    <linearGradient id="pathGrad" gradientUnits="userSpaceOnUse" x1="64" y1="0" x2="1010" y2="0">
+      <stop offset="0" stop-color="#e6e9f2" stop-opacity="0.7"/><stop offset="1" stop-color="#ff3b2f"/>
+    </linearGradient>
+    <marker id="ahm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#8b93b0"/></marker>
+    <marker id="ahp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#c4b5fd"/></marker>
+  </defs>
+
+  <rect width="1280" height="800" rx="26" fill="url(#bg)"/>
+  <rect width="1280" height="800" rx="26" fill="url(#holes)" mask="url(#holesMask)"/>
+
+  <text x="48" y="68" class="h1">Optical path</text>
+  <text x="48" y="102" class="sub">One 635 nm beam, two motorized mirrors and one fiber, seen from above. Schematic, not to scale.</text>
+  <text x="48" y="127" class="sub">The Z-fold lets M1 and M2 set both the angle and the position of the beam at the lens.</text>
+
+  <!-- the bench -->
+  
+  <rect x="64" y="510" width="116" height="40" rx="9" fill="url(#metal)" stroke="#3c4c7c" stroke-width="1.2"/>
+  <rect x="76" y="520" width="60" height="20" rx="4" fill="#0a0f22" stroke="#2c3966"/>
+  <circle cx="87" cy="530" r="3.2" fill="#34d399" filter="url(#softglow)"/>
+  <line x1="100" y1="530" x2="127" y2="530" stroke="#2c3966" stroke-width="2"/>
+  <rect x="177" y="521" width="9" height="18" rx="2" fill="#94a3b8"/>
+  <rect x="217.5" y="503.5" width="5" height="24" rx="1.5" fill="#5b6b9c"/><rect x="217.5" y="532.5" width="5" height="24" rx="1.5" fill="#5b6b9c"/>
+  <rect x="347" y="505" width="6" height="50" rx="2" fill="#c4b5fd" fill-opacity="0.8"/><rect x="365" y="505" width="6" height="50" rx="2" fill="#c4b5fd" fill-opacity="0.8"/><path d="M334 496 A 18 11 0 0 1 366 496" fill="none" stroke="#c4b5fd" stroke-width="1.5" marker-start="url(#ahp)" marker-end="url(#ahp)"/>
+  
+  <rect x="546" y="516" width="28" height="28" rx="2.5" fill="#7dd3fc" fill-opacity="0.16" stroke="#7dd3fc" stroke-opacity="0.85" stroke-width="1.4"/>
+  <line x1="546" y1="544" x2="574" y2="516" stroke="#7dd3fc" stroke-opacity="0.95" stroke-width="1.4"/>
+  
+  <rect x="543" y="433" width="34" height="26" rx="3.5" fill="#1b2442" stroke="#3c4c7c"/>
+  <rect x="553" y="455" width="14" height="4" fill="#94a3b8"/>
+  <circle cx="560" cy="457" r="9" fill="#ff3b2f" opacity="0.55" filter="url(#haze)"/>
+  
+  <rect x="1010" y="270" width="60" height="60" rx="6" fill="#121a35" stroke="#3c4c7c"/>
+  <line x1="1020" y1="321" x2="1060" y2="321" stroke="#8b93b0" stroke-width="1.2" marker-start="url(#ahm)" marker-end="url(#ahm)"/>
+  <path d="M1040 275 Q1051 300 1040 325 Q1029 300 1040 275Z" fill="#7dd3fc" fill-opacity="0.22" stroke="#7dd3fc" stroke-width="1.6"/>
+  <rect x="772.5" y="273" width="5" height="24" rx="1.5" fill="#5b6b9c"/><rect x="772.5" y="303" width="5" height="24" rx="1.5" fill="#5b6b9c"/><rect x="972.5" y="273" width="5" height="24" rx="1.5" fill="#5b6b9c"/><rect x="972.5" y="303" width="5" height="24" rx="1.5" fill="#5b6b9c"/>
+  
+  <rect x="1087" y="275" width="8" height="50" rx="2" fill="#3c4c7c"/>
+  <rect x="1080" y="291" width="32" height="18" rx="3" fill="url(#metal)" stroke="#3c4c7c"/>
+  <rect x="1080" y="297.5" width="10" height="5" rx="1" fill="#e2e8f0" fill-opacity="0.85"/>
+  
+  <path d="M1112 300 C1170 300 1214 320 1214 370 L1214 434" fill="none" stroke="#facc15" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+  <path d="M1112 300 C1170 300 1214 320 1214 370 L1214 434" fill="none" stroke="#ff3b2f" stroke-width="2" stroke-linecap="round" opacity="0.55" filter="url(#glow)"/>
+  <rect x="1206" y="432" width="16" height="24" rx="3" fill="url(#metal)" stroke="#3c4c7c"/>
+  <rect x="1192" y="455" width="44" height="6" rx="2" fill="#3c4c7c"/>
+  
+  <rect x="1197" y="461" width="34" height="26" rx="3.5" fill="#1b2442" stroke="#3c4c7c"/>
+  <rect x="1207" y="461" width="14" height="4" fill="#94a3b8"/>
+  <circle cx="1214" cy="463" r="9" fill="#ff3b2f" opacity="0.55" filter="url(#haze)"/>
+  
+  <rect x="186" y="523" width="32" height="14" fill="#ff3b2f" opacity="0.35" filter="url(#haze)"/>
+  <rect x="186" y="525" width="32" height="10" fill="#ff3b2f" opacity="0.5"/>
+  <line x1="186" y1="530" x2="220" y2="530" stroke="#ffd2c2" stroke-width="1" opacity="0.8"/>
+  <g filter="url(#haze)" opacity="0.55">
+    <polyline points="220,530 700,530 700,300 1040,300" fill="none" stroke="#ff3b2f" stroke-width="9" stroke-linejoin="round"/>
+    <polyline points="560,530 560,459" fill="none" stroke="#ff3b2f" stroke-width="6"/>
+  </g>
+  <polyline points="560,530 560,459" fill="none" stroke="#ff3b2f" stroke-width="1.8" opacity="0.85" filter="url(#glow)"/>
+  <polyline points="220,530 700,530 700,300 1040,300" fill="none" stroke="#ff3b2f" stroke-width="2.8" stroke-linejoin="round" filter="url(#glow)"/>
+  <polyline points="220,530 700,530 700,300 1040,300" fill="none" stroke="#ffd2c2" stroke-width="1" stroke-linejoin="round"/>
+  <polygon points="1040,296.8 1040,303.2 1080,300" fill="#ff3b2f" fill-opacity="0.8" filter="url(#glow)"/>
+  <circle cx="1082" cy="300" r="6" fill="#ff3b2f" opacity="0.8" filter="url(#haze)"/>
+  
+  <g transform="translate(700 530) rotate(-45)">
+    <rect x="-36" y="34" width="72" height="9" rx="2" fill="#0f1833" stroke="#25325e"/>
+      <g transform="translate(-21 0)">
+        <rect x="-3.5" y="19" width="7" height="9" rx="1" fill="#94a3b8"/>
+        <line x1="0" y1="28" x2="0" y2="41" stroke="#cbd5e1" stroke-width="2.6"/>
+        <rect x="-6" y="40" width="12" height="13" rx="2" fill="#e0b354"/>
+        <line x1="-6" y1="46.5" x2="6" y2="46.5" stroke="#8a6a24" stroke-width="1"/>
+        <rect x="-16" y="53" width="32" height="40" rx="4" fill="url(#metal)" stroke="#3c4c7c" stroke-width="1.2"/>
+        <rect x="-16" y="85" width="32" height="8" rx="2.5" fill="#11182f" stroke="#3c4c7c"/>
+        <line x1="-9" y1="62" x2="9" y2="62" stroke="#4b5f95" stroke-width="1.4"/>
+        <line x1="-9" y1="67" x2="9" y2="67" stroke="#4b5f95" stroke-width="1.4"/>
+      </g>
+      <g transform="translate(21 0)">
+        <rect x="-3.5" y="19" width="7" height="9" rx="1" fill="#94a3b8"/>
+        <line x1="0" y1="28" x2="0" y2="41" stroke="#cbd5e1" stroke-width="2.6"/>
+        <rect x="-6" y="40" width="12" height="13" rx="2" fill="#e0b354"/>
+        <line x1="-6" y1="46.5" x2="6" y2="46.5" stroke="#8a6a24" stroke-width="1"/>
+        <rect x="-16" y="53" width="32" height="40" rx="4" fill="url(#metal)" stroke="#3c4c7c" stroke-width="1.2"/>
+        <rect x="-16" y="85" width="32" height="8" rx="2.5" fill="#11182f" stroke="#3c4c7c"/>
+        <line x1="-9" y1="62" x2="9" y2="62" stroke="#4b5f95" stroke-width="1.4"/>
+        <line x1="-9" y1="67" x2="9" y2="67" stroke="#4b5f95" stroke-width="1.4"/>
+      </g>
+    <rect x="-35" y="12" width="70" height="7" rx="2" fill="#151d38" stroke="#3c4c7c"/>
+    <rect x="-35" y="3" width="70" height="7" rx="2" fill="url(#metal)" stroke="#3c4c7c"/>
+    <rect x="-32" y="-3" width="64" height="6" rx="1.5" fill="#e2e8f0" filter="url(#softglow)"/>
+    <rect x="-32" y="0.5" width="64" height="2.5" fill="#94a3b8" opacity="0.6"/>
+  </g>
+  
+  <g transform="translate(700 300) rotate(135)">
+    <rect x="-36" y="34" width="72" height="9" rx="2" fill="#0f1833" stroke="#25325e"/>
+      <g transform="translate(-21 0)">
+        <rect x="-3.5" y="19" width="7" height="9" rx="1" fill="#94a3b8"/>
+        <line x1="0" y1="28" x2="0" y2="41" stroke="#cbd5e1" stroke-width="2.6"/>
+        <rect x="-6" y="40" width="12" height="13" rx="2" fill="#e0b354"/>
+        <line x1="-6" y1="46.5" x2="6" y2="46.5" stroke="#8a6a24" stroke-width="1"/>
+        <rect x="-16" y="53" width="32" height="40" rx="4" fill="url(#metal)" stroke="#3c4c7c" stroke-width="1.2"/>
+        <rect x="-16" y="85" width="32" height="8" rx="2.5" fill="#11182f" stroke="#3c4c7c"/>
+        <line x1="-9" y1="62" x2="9" y2="62" stroke="#4b5f95" stroke-width="1.4"/>
+        <line x1="-9" y1="67" x2="9" y2="67" stroke="#4b5f95" stroke-width="1.4"/>
+      </g>
+      <g transform="translate(21 0)">
+        <rect x="-3.5" y="19" width="7" height="9" rx="1" fill="#94a3b8"/>
+        <line x1="0" y1="28" x2="0" y2="41" stroke="#cbd5e1" stroke-width="2.6"/>
+        <rect x="-6" y="40" width="12" height="13" rx="2" fill="#e0b354"/>
+        <line x1="-6" y1="46.5" x2="6" y2="46.5" stroke="#8a6a24" stroke-width="1"/>
+        <rect x="-16" y="53" width="32" height="40" rx="4" fill="url(#metal)" stroke="#3c4c7c" stroke-width="1.2"/>
+        <rect x="-16" y="85" width="32" height="8" rx="2.5" fill="#11182f" stroke="#3c4c7c"/>
+        <line x1="-9" y1="62" x2="9" y2="62" stroke="#4b5f95" stroke-width="1.4"/>
+        <line x1="-9" y1="67" x2="9" y2="67" stroke="#4b5f95" stroke-width="1.4"/>
+      </g>
+    <rect x="-35" y="12" width="70" height="7" rx="2" fill="#151d38" stroke="#3c4c7c"/>
+    <rect x="-35" y="3" width="70" height="7" rx="2" fill="url(#metal)" stroke="#3c4c7c"/>
+    <rect x="-32" y="-3" width="64" height="6" rx="1.5" fill="#e2e8f0" filter="url(#softglow)"/>
+    <rect x="-32" y="0.5" width="64" height="2.5" fill="#94a3b8" opacity="0.6"/>
+  </g>
+
+  <!-- M1 to M2 -->
+  <g stroke="#8b93b0" stroke-opacity="0.5" stroke-width="1" fill="none">
+    <path d="M734 352 H742 M738 352 V478 M734 478 H742"/>
+  </g>
+  <text transform="translate(754 415.0) rotate(-90)" text-anchor="middle" class="mono">150 mm</text>
+
+  <text x="64" y="584" text-anchor="start" class="lt">635 nm laser</text><text x="64" y="606" text-anchor="start" class="spec">Quarton VLM-635-32 LPT</text><text x="64" y="625" text-anchor="start" class="ls">Under 1 mW,</text><text x="64" y="644" text-anchor="start" class="ls">beam about 7 × 3 mm.</text><text x="359" y="584" text-anchor="middle" class="lt">Crossed polarizers</text><text x="359" y="606" text-anchor="middle" class="spec">linear polarizer sheet</text><text x="359" y="625" text-anchor="middle" class="ls">The brightness knob:</text><text x="359" y="644" text-anchor="middle" class="ls">rotate the first one.</text><text x="560" y="584" text-anchor="middle" class="lt">Beamsplitter</text><text x="560" y="606" text-anchor="middle" class="spec">plate or cube</text><text x="560" y="625" text-anchor="middle" class="ls">Sends a slice to the</text><text x="560" y="644" text-anchor="middle" class="ls">reference photodiode.</text><line x1="359" y1="560" x2="359" y2="564" stroke="#3b4a7a" stroke-width="1.2"/><line x1="560" y1="550" x2="560" y2="564" stroke="#3b4a7a" stroke-width="1.2"/><line x1="122" y1="554" x2="122" y2="564" stroke="#3b4a7a" stroke-width="1.2"/><text x="64" y="392" text-anchor="start" class="lt">2 mm aperture</text><text x="64" y="414" text-anchor="start" class="spec">printed, 10-20 mm after the laser</text><text x="64" y="433" text-anchor="start" class="ls">Trims the beam to the fiber mode. In the</text><text x="64" y="452" text-anchor="start" class="ls">twin 83% of what passes it couples, against</text><text x="64" y="471" text-anchor="start" class="ls">25% of the whole beam without it.</text><line x1="220" y1="484" x2="220" y2="500" stroke="#3b4a7a" stroke-width="1.2"/><text x="560" y="356" text-anchor="middle" class="lt">Reference photodiode</text><text x="560" y="378" text-anchor="middle" class="spec">BPW34, MCP6002 amp, 47 kΩ</text><text x="560" y="397" text-anchor="middle" class="ls">Read on ADS1115 A0.</text><line x1="560" y1="408" x2="560" y2="431" stroke="#3b4a7a" stroke-width="1.2"/><text x="590" y="186" text-anchor="end" class="lt">M1 and M2</text><text x="590" y="208" text-anchor="end" class="spec">1 in mirrors, Thorlabs KMS-style mounts</text><text x="590" y="227" text-anchor="end" class="ls">Each 100 TPI adjuster is turned</text><text x="590" y="246" text-anchor="end" class="ls">by its own NEMA 8: four axes.</text><text x="722" y="336" class="mname">M2</text><text x="678" y="512" text-anchor="end" class="mname">M1</text><line x1="733.59" y1="528.94" x2="806" y2="491" stroke="#3b4a7a" stroke-width="1.1"/><circle cx="733.59" cy="528.94" r="2" fill="#e6e9f2"/><text x="812" y="496" class="small">100 TPI adjuster</text><line x1="739.81" y1="538.27" x2="806" y2="513" stroke="#3b4a7a" stroke-width="1.1"/><circle cx="739.81" cy="538.27" r="2" fill="#e6e9f2"/><text x="812" y="518" class="small">2 mm hex rod</text><line x1="750.2" y1="542.02" x2="806" y2="535" stroke="#3b4a7a" stroke-width="1.1"/><circle cx="750.2" cy="542.02" r="2" fill="#e6e9f2"/><text x="812" y="540" class="small">brass coupler</text><line x1="775.66" y1="553.33" x2="806" y2="557" stroke="#3b4a7a" stroke-width="1.1"/><circle cx="775.66" cy="553.33" r="2" fill="#e6e9f2"/><text x="812" y="562" class="small">NEMA 8 motor</text><text x="875" y="186" text-anchor="middle" class="lt">Iris 1 and iris 2</text><text x="875" y="208" text-anchor="middle" class="spec">printed</text><text x="875" y="227" text-anchor="middle" class="ls">Mark the beam axis in phase 1. For the fiber,</text><text x="875" y="246" text-anchor="middle" class="ls">iris 1 comes out and iris 2 is a 3 mm baffle.</text><line x1="775" y1="251" x2="775" y2="268" stroke="#3b4a7a" stroke-width="1.2"/><line x1="975" y1="251" x2="975" y2="268" stroke="#3b4a7a" stroke-width="1.2"/><text x="1040" y="368" text-anchor="middle" class="lt">f = 8 mm asphere</text><text x="1040" y="390" text-anchor="middle" class="spec">on a micrometer stage</text><text x="1040" y="409" text-anchor="middle" class="ls">The stage moves it to focus.</text><text x="1040" y="428" text-anchor="middle" class="ls">In phase 1 the OV9281 takes its place.</text><line x1="1040" y1="333" x2="1040" y2="348" stroke="#3b4a7a" stroke-width="1.2"/><text x="1091" y="186" text-anchor="start" class="lt">FC bulkhead</text><text x="1091" y="208" text-anchor="start" class="spec">fixed</text><text x="1091" y="227" text-anchor="start" class="ls">The lens moves,</text><text x="1091" y="246" text-anchor="start" class="ls">the fiber does not.</text><line x1="1091" y1="251" x2="1091" y2="271" stroke="#3b4a7a" stroke-width="1.2"/><text x="1232" y="536" text-anchor="end" class="lt">Output photodiode</text><text x="1232" y="558" text-anchor="end" class="spec">a second BPW34 board, ADS1115 A1</text><text x="1232" y="577" text-anchor="end" class="ls">Score = output / reference:</text><text x="1232" y="596" text-anchor="end" class="ls">the ratio cancels laser flicker.</text>
+  <text x="48" y="704" class="spec">Light path, design distances in mm</text><line x1="64" y1="742" x2="1010" y2="742" stroke="url(#pathGrad)" stroke-width="3" stroke-linecap="round"/><circle cx="64" cy="742" r="5.5" fill="#0b1020" stroke="#e6e9f2" stroke-width="1.8"/><text x="64" y="768" text-anchor="middle" class="ls">laser</text><text x="131.57" y="732" text-anchor="middle" class="mono">15</text><circle cx="199.14" cy="742" r="5.5" fill="#0b1020" stroke="#e6e9f2" stroke-width="1.8"/><text x="199.14" y="768" text-anchor="middle" class="ls">aperture</text><text x="266.71" y="732" text-anchor="middle" class="mono">115</text><circle cx="334.29" cy="742" r="5.5" fill="#0b1020" stroke="#e6e9f2" stroke-width="1.8"/><text x="334.29" y="768" text-anchor="middle" class="ls">M1</text><text x="401.86" y="732" text-anchor="middle" class="mono">150</text><circle cx="469.43" cy="742" r="5.5" fill="#0b1020" stroke="#e6e9f2" stroke-width="1.8"/><text x="469.43" y="768" text-anchor="middle" class="ls">M2</text><text x="537" y="732" text-anchor="middle" class="mono">70</text><circle cx="604.57" cy="742" r="5.5" fill="#0b1020" stroke="#e6e9f2" stroke-width="1.8"/><text x="604.57" y="768" text-anchor="middle" class="ls">iris 1</text><text x="672.14" y="732" text-anchor="middle" class="mono">190</text><circle cx="739.71" cy="742" r="5.5" fill="#0b1020" stroke="#e6e9f2" stroke-width="1.8"/><text x="739.71" y="768" text-anchor="middle" class="ls">iris 2</text><text x="807.29" y="732" text-anchor="middle" class="mono">50</text><circle cx="874.86" cy="742" r="5.5" fill="#0b1020" stroke="#e6e9f2" stroke-width="1.8"/><text x="874.86" y="768" text-anchor="middle" class="ls">lens</text><text x="942.43" y="732" text-anchor="middle" class="mono">8</text><circle cx="1010" cy="742" r="5.5" fill="#0b1020" stroke="#e6e9f2" stroke-width="1.8"/><text x="1010" y="768" text-anchor="middle" class="ls">fiber</text><text x="1046" y="736" class="spec">≈ 600 mm</text><text x="1046" y="755" class="ls">laser to fiber</text>
+</svg>
