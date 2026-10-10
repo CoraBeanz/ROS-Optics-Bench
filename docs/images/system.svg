@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820" role="img" aria-labelledby="t d">
+  <title id="t">How the bench's hardware and code fit together</title>
+  <desc id="d">Block diagram. The hardware: four NEMA 8 steppers on TMC2209 drivers sharing one UART bus turn the mirror adjusters, a 635 nm laser is switched by a TTL line on GPIO 21, and two BPW34 photodiodes with MCP6002 amplifiers are read by an ADS1115 16-bit ADC on I2C, A0 the reference and A1 the output. An OV9281 global-shutter USB camera, not tried yet, is the beam profiler for phase 1. An Adafruit ESP32 Feather V2 runs the Arduino IDE sketch in firmware/: it moves the four axes inside soft limits, keeps their positions in flash, releases the coils between moves, auto-ranges both photodiodes and switches the laser. It talks to the host over USB serial at 115200 baud in a plain-text protocol, one command per line, such as GOTO M2X 120 or PD STREAM 20, with OK or ERR replies and EVT DONE when a move ends. tools/bench_link.py gives the host one interface, send(line) and an rx queue, to either the real ESP32 (SerialLink) or the bench twin (SimLink). Two front ends use it and run the same Aligner: the PySide6 bench test panel in tools/test_gui.py, and the ROS 2 Humble packages in host/ros2_ws, whose bench_driver node in /bench publishes the status, photodiodes and rx topics, offers the command, laser, stop and pd_dark services and the move_to and align actions. In /camera, the v4l2_camera node publishes the camera's images on /camera/image_raw, and the beam_spot node finds the spot in them and publishes /camera/beam_spot. The launch argument port:=sim runs the driver on the simulator, and port:=/dev/optics_bench on the ESP32. tools/bench_twin simulates the optics, motors, photodiodes and knocks and holds the Aligner, which searches in a spiral when there is no light, then steers and walks back to the peak; tools/twin.py runs it in trials. The firmware runs on the bench and the test panel is used there; the test panel's Auto-align and the bench_driver node have only been run against the simulator, the beam_spot node has only been run on synthetic frames, and the twin has 14 unit tests. A band at the bottom lists the design files: the Onshape STEP of the whole bench in cad/, the KiCad 10 control board and photodiode amplifier in electronics/pcb with Gerbers ready to order, and the bill of materials in docs/bom; every pin the firmware touches is set in config.h.</desc>
+  <style>
+    text { font-family: ui-sans-serif, -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    .h1 { font-size: 30px; font-weight: 800; fill: #f1f5ff; }
+    .sub { font-size: 17px; fill: #a3acc9; }
+    .lt { font-size: 19px; font-weight: 700; fill: #e6e9f2; }
+    .ls { font-size: 14.5px; fill: #8b93b0; font-family: ui-sans-serif, -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 400; }
+    .desc { font-size: 14.5px; fill: #c9d3f5; }
+    .test { font-size: 14px; fill: #8fd9b6; }
+    .small { font-size: 13.5px; fill: #8b93b0; font-style: italic; }
+    .mono { font-size: 14px; font-weight: 700; fill: #e6e9f2; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+    .data { font-size: 13px; fill: #e6e9f2; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+    .tick { font-size: 12px; fill: #8b93b0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+    .key { font-size: 13px; fill: #8b93b0; font-family: ui-sans-serif, -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 400; }
+    .val { font-size: 13px; fill: #7dd3fc; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+    .aval { font-size: 13.5px; fill: #c9d3f5; }
+    .node { font-size: 13.5px; font-weight: 700; fill: #e6e9f2; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+    .badge { font-size: 12px; font-weight: 700; }
+    .part { font-size: 14.5px; font-weight: 700; fill: #e6e9f2; }
+    .partspec { font-size: 13px; fill: #8b93b0; }
+    .band { font-size: 14.5px; fill: #a3acc9; }
+  </style>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101a3a"/><stop offset="0.55" stop-color="#0a1024"/><stop offset="1" stop-color="#060914"/>
+    </linearGradient>
+    <pattern id="holes" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.7" fill="#1d2955"/>
+    </pattern>
+    <radialGradient id="fade" cx="0.5" cy="0.55" r="0.7">
+      <stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <mask id="holesMask"><rect width="1280" height="820" fill="url(#fade)"/></mask>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3.2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="haze" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#6b7699"/></marker><marker id="ahFw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#fbbf24"/></marker><marker id="ahTwin" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#c4b5fd"/></marker>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b3a63"/><stop offset="1" stop-color="#18213f"/></linearGradient>
+    <linearGradient id="linkGrad" x1="0" y1="176" x2="0" y2="338" gradientUnits="userSpaceOnUse">
+      <stop offset="0.2" stop-color="#fbbf24"/><stop offset="0.8" stop-color="#c4b5fd"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="820" rx="26" fill="url(#bg)"/>
+  <rect width="1280" height="820" rx="26" fill="url(#holes)" mask="url(#holesMask)"/>
+
+  <text x="48" y="66" class="h1">How it fits together</text>
+  <text x="48" y="98" class="sub">The ESP32 does the real-time work. The test panel and ROS 2 both speak its plain-text serial protocol,</text>
+  <text x="48" y="122" class="sub">and the simulator answers the same commands, so it can stand in for the bench.</text>
+
+  <rect x="48" y="154" width="316" height="206" rx="16" fill="#0e1631" fill-opacity="0.96" stroke="#2c3b6e"/>
+  <path d="M49.5 176 L49.5 338" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+  <text x="70" y="186" class="mono" style="fill:#fbbf24">firmware/<tspan class="ls" dx="8">· Arduino IDE sketch</tspan></text>
+  <text x="70" y="216" class="lt">Adafruit ESP32 Feather V2</text>
+  <text x="70" y="244" class="desc">Moves the four axes inside soft limits,</text><text x="70" y="264" class="desc">keeps positions in flash, releases the</text><text x="70" y="284" class="desc">coils between moves, auto-ranges both</text><text x="70" y="304" class="desc">photodiodes and switches the laser.</text>
+  <circle cx="78" cy="333" r="8" fill="#34d399" fill-opacity="0.16" stroke="#34d399" stroke-width="1.4"/><path d="M74 333 L77 336 L82.5 329.5" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="94" y="338" class="test">runs on the bench</text>
+  <rect x="48" y="400" width="316" height="310" rx="16" fill="#0e1631" fill-opacity="0.6" stroke="#2c3b6e" stroke-dasharray="5 5"/>
+  <text x="70" y="436" class="lt">Hardware</text>
+  <rect x="71" y="454" width="30" height="30" rx="5" fill="url(#metal)" stroke="#3c4c7c"/><circle cx="86" cy="469" r="7" fill="#11182f" stroke="#4b5f95"/><circle cx="86" cy="469" r="2.2" fill="#e0b354"/><circle cx="76" cy="459" r="1.4" fill="#4b5f95"/><circle cx="76" cy="479" r="1.4" fill="#4b5f95"/><circle cx="96" cy="459" r="1.4" fill="#4b5f95"/><circle cx="96" cy="479" r="1.4" fill="#4b5f95"/>
+  <text x="114" y="464" class="part">4 mirror axes</text>
+  <text x="114" y="482" class="partspec">NEMA 8 + TMC2209, one UART bus</text>
+  <rect x="101" y="514" width="9" height="2" rx="1" fill="#ff3b2f" filter="url(#glow)"/><rect x="66" y="507" width="34" height="16" rx="4" fill="url(#metal)" stroke="#3c4c7c"/><circle cx="74" cy="515" r="2" fill="#34d399"/><rect x="98" y="511.5" width="4" height="7" rx="1" fill="#94a3b8"/>
+  <text x="114" y="510" class="part">635 nm laser</text>
+  <text x="114" y="528" class="partspec">TTL on GPIO 21</text>
+  <path d="M81 571 V577 M91 571 V577" stroke="#94a3b8" stroke-width="1.6"/><rect x="74" y="548" width="24" height="23" rx="3" fill="#1b2442" stroke="#3c4c7c"/><rect x="79" y="553" width="14" height="13" rx="1.5" fill="#0a0f22" stroke="#c4b5fd" stroke-opacity="0.7"/><circle cx="86" cy="559.5" r="5" fill="#ff3b2f" opacity="0.5" filter="url(#haze)"/>
+  <text x="114" y="556" class="part">2 photodiodes</text>
+  <text x="114" y="574" class="partspec">BPW34 + MCP6002 into an ADS1115,</text><text x="114" y="590" class="partspec">16-bit ADC on I2C: A0 ref, A1 out</text>
+  <line x1="70" y1="614" x2="342" y2="614" stroke="#2c3b6e" stroke-width="1"/>
+  <rect x="74.5" y="630" width="3" height="4" fill="#4b5f95"/><rect x="74.5" y="662" width="3" height="4" fill="#4b5f95"/><rect x="81.5" y="630" width="3" height="4" fill="#4b5f95"/><rect x="81.5" y="662" width="3" height="4" fill="#4b5f95"/><rect x="88.5" y="630" width="3" height="4" fill="#4b5f95"/><rect x="88.5" y="662" width="3" height="4" fill="#4b5f95"/><rect x="95.5" y="630" width="3" height="4" fill="#4b5f95"/><rect x="95.5" y="662" width="3" height="4" fill="#4b5f95"/><rect x="70" y="634" width="32" height="28" rx="4" fill="#151d38" stroke="#4b5f95" stroke-width="1.4"/><rect x="78" y="641" width="16" height="14" rx="1.5" fill="#34d399" fill-opacity="0.28" stroke="#34d399" stroke-width="1.1"/>
+  <text x="114" y="645" class="part">OV9281 camera</text>
+  <text x="114" y="663" class="partspec">global shutter, UVC</text><text x="114" y="679" class="partspec">beam profiler for phase 1</text>
+  <rect x="500" y="154" width="300" height="206" rx="16" fill="#0e1631" fill-opacity="0.96" stroke="#2c3b6e"/>
+  <path d="M501.5 176 L501.5 338" stroke="url(#linkGrad)" stroke-width="3" stroke-linecap="round"/>
+  <text x="522" y="186" class="mono" style="fill:#e6e9f2">tools/bench_link.py<tspan class="ls" dx="8">· Python</tspan></text>
+  <text x="522" y="216" class="lt">Bench link</text>
+  <text x="522" y="247" class="val" style="fill:#fbbf24">SerialLink</text><text x="616" y="247" class="desc">the ESP32 over USB</text>
+  <text x="522" y="270" class="val" style="fill:#c4b5fd">SimLink</text><text x="616" y="270" class="desc">the bench twin</text>
+  <text x="522" y="304" class="desc">Either way the front end gets one</text><text x="522" y="324.5" class="desc">interface: send(line) and an rx queue.</text>
+  <rect x="500" y="400" width="300" height="202" rx="16" fill="#0e1631" fill-opacity="0.96" stroke="#2c3b6e"/>
+  <path d="M501.5 422 L501.5 580" stroke="#c4b5fd" stroke-width="3" stroke-linecap="round"/>
+  <text x="522" y="432" class="mono" style="fill:#c4b5fd">tools/bench_twin/<tspan class="ls" dx="8">· numpy</tspan></text>
+  <text x="522" y="462" class="lt">Bench twin</text>
+  <text x="522" y="491" class="desc">Simulates the optics, motors,</text><text x="522" y="511.5" class="desc">photodiodes and knocks.</text>
+  <text x="522" y="536" class="key" style="fill:#c4b5fd;font-weight:700">Aligner</text><text x="592" y="536" class="aval">spiral search → steer → walk</text>
+  <text x="522" y="556" class="key">trials</text><text x="592" y="556" class="val">tools/twin.py</text>
+  <circle cx="530" cy="575" r="8" fill="#34d399" fill-opacity="0.16" stroke="#34d399" stroke-width="1.4"/><path d="M526 575 L529 578 L534.5 571.5" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="546" y="580" class="test">14 unit tests</text>
+  <rect x="880" y="154" width="352" height="206" rx="16" fill="#0e1631" fill-opacity="0.96" stroke="#2c3b6e"/>
+  <path d="M881.5 176 L881.5 338" stroke="#fb7185" stroke-width="3" stroke-linecap="round"/>
+  <text x="902" y="186" class="mono" style="fill:#fb7185">tools/test_gui.py<tspan class="ls" dx="8">· PySide6</tspan></text>
+  <text x="902" y="216" class="lt">Bench test panel</text>
+  <rect x="1139.6" y="200" width="74.4" height="22" rx="11" fill="#c4b5fd" fill-opacity="0.12" stroke="#c4b5fd" stroke-opacity="0.5"/><circle cx="1150.6" cy="211" r="3.2" fill="#c4b5fd"/><text x="1158.6" y="215.5" class="badge" style="fill:#c4b5fd">Aligner</text>
+  <text x="902" y="244" class="desc">Jog, nudge and go-to for each motor,</text><text x="902" y="264" class="desc">live photodiode plots, Auto-align,</text><text x="902" y="284" class="desc">and Knock buttons on the simulator.</text>
+  <circle cx="910" cy="311" r="8" fill="#34d399" fill-opacity="0.16" stroke="#34d399" stroke-width="1.4"/><path d="M906 311 L909 314 L914.5 307.5" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="926" y="316" class="test">used on the bench</text>
+  <circle cx="910" cy="333" r="8" fill="#34d399" fill-opacity="0.16" stroke="#34d399" stroke-width="1.4"/><path d="M906 333 L909 336 L914.5 329.5" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="926" y="338" class="test">Auto-align on the simulator only</text>
+  <rect x="880" y="400" width="352" height="310" rx="16" fill="#0e1631" fill-opacity="0.96" stroke="#2c3b6e"/>
+  <path d="M881.5 422 L881.5 688" stroke="#7dd3fc" stroke-width="3" stroke-linecap="round"/>
+  <text x="902" y="432" class="mono" style="fill:#7dd3fc">host/ros2_ws/<tspan class="ls" dx="8">· Humble, for the Jetson</tspan></text>
+  <text x="902" y="462" class="lt">ROS 2 packages</text>
+  <rect x="1139.6" y="446" width="74.4" height="22" rx="11" fill="#c4b5fd" fill-opacity="0.12" stroke="#c4b5fd" stroke-opacity="0.5"/><circle cx="1150.6" cy="457" r="3.2" fill="#c4b5fd"/><text x="1158.6" y="461.5" class="badge" style="fill:#c4b5fd">Aligner</text>
+  <text x="902" y="492" class="node">bench_driver<tspan class="key" dx="8">node in /bench</tspan></text>
+  <text x="902" y="514" class="key">topics</text><text x="972" y="514" class="val">status, photodiodes, rx</text><text x="902" y="533.5" class="key">services</text><text x="972" y="533.5" class="val">command, laser, stop, pd_dark</text><text x="902" y="553" class="key">actions</text><text x="972" y="553" class="val">move_to, align</text><text x="902" y="572.5" class="key">launch</text><text x="972" y="572.5" class="val">port:=sim or /dev/optics_bench</text>
+  <circle cx="910" cy="592" r="8" fill="#34d399" fill-opacity="0.16" stroke="#34d399" stroke-width="1.4"/><path d="M906 592 L909 595 L914.5 588.5" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="926" y="597" class="test">run against the simulator only</text>
+  <line x1="902" y1="614" x2="1210" y2="614" stroke="#2c3b6e" stroke-width="1"/>
+  <text x="902" y="642" class="node">v4l2_camera <tspan style="font-family:ui-sans-serif, -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif">→</tspan> beam_spot<tspan class="key" dx="8">nodes in /camera</tspan></text>
+  <text x="902" y="663" class="key">topics</text><text x="972" y="663" class="val">image_raw <tspan style="font-family:ui-sans-serif, -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif">→</tspan> beam_spot</text>
+  <circle cx="910" cy="683" r="8" fill="#34d399" fill-opacity="0.16" stroke="#34d399" stroke-width="1.4"/><path d="M906 683 L909 686 L914.5 679.5" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="926" y="688" class="test">only run on synthetic frames</text>
+
+  <path d="M496 226 L368 226" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#ahFw)"/>
+  <text x="432" y="192" text-anchor="middle" class="data">GOTO M2X 120</text>
+  <text x="432" y="212" text-anchor="middle" class="data">PD STREAM 20</text>
+  <text x="432" y="250" text-anchor="middle" class="small">USB serial,</text>
+  <text x="432" y="268" text-anchor="middle" class="small">115200 baud</text>
+  <path d="M368 282 L496 282" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#ahFw)"/>
+  <text x="432" y="306" text-anchor="middle" class="data">OK · ERR</text>
+  <text x="432" y="326" text-anchor="middle" class="data">EVT DONE</text>
+  <path d="M98 364 L98 396" fill="none" stroke="#6b7699" stroke-width="2" marker-end="url(#ah)"/>
+  <text x="108" y="384.5" class="tick">STEP/DIR, UART</text>
+  <path d="M244 364 L244 396" fill="none" stroke="#6b7699" stroke-width="2" marker-end="url(#ah)"/>
+  <text x="254" y="384.5" class="tick">TTL</text>
+  <path d="M310 396 L310 364" fill="none" stroke="#6b7699" stroke-width="2" marker-end="url(#ah)"/>
+  <text x="320" y="384.5" class="tick">I2C</text>
+  <path d="M620 396 L620 364" fill="none" stroke="#c4b5fd" stroke-width="2" marker-end="url(#ahTwin)"/>
+  <text x="634" y="385" class="small">SimLink runs the twin</text>
+  <path d="M804 258 L876 258" fill="none" stroke="#6b7699" stroke-width="2" marker-start="url(#ah)" marker-end="url(#ah)"/>
+  <path d="M840 258 L840 488 L876 488" fill="none" stroke="#6b7699" stroke-width="2" marker-end="url(#ah)"/>
+  <circle cx="840" cy="258" r="3.5" fill="#6b7699"/>
+  <path d="M368 648 L876 648" fill="none" stroke="#6b7699" stroke-width="2" marker-end="url(#ah)"/>
+  <text x="432" y="638" text-anchor="middle" class="small">USB video</text>
+
+  <rect x="48" y="728" width="1184" height="72" rx="16" fill="#0e1631" fill-opacity="0.5" stroke="#2c3b6e" stroke-dasharray="5 5"/>
+  <rect x="66" y="740" width="234" height="48" rx="12" fill="#121a33" stroke="#3c4c7c"/><text x="82" y="760" class="mono" style="fill:#c9d3f5">cad/</text><text x="82" y="779" class="ls">Onshape STEP, whole bench</text>
+  <rect x="312" y="740" width="252" height="48" rx="12" fill="#121a33" stroke="#3c4c7c"/><text x="328" y="760" class="mono" style="fill:#c9d3f5">electronics/pcb/</text><text x="328" y="779" class="ls">KiCad 10 control board, PD amp</text>
+  <rect x="576" y="740" width="140" height="48" rx="12" fill="#121a33" stroke="#3c4c7c"/><text x="592" y="760" class="mono" style="fill:#c9d3f5">docs/bom/</text><text x="592" y="779" class="ls">bill of materials</text>
+  <text x="738" y="760" class="band">Both boards have Gerbers in fab/, ready to order, and</text><text x="738" y="780" class="band">every pin the firmware touches is set in config.h.</text>
+</svg>

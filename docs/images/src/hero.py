@@ -401,7 +401,7 @@ def chart():
                    for v, op, lab in ((0, 0.12, "0"), (0.5, 0.05, "50%"), (1.0, 0.08, "100%")))
     return f'''
   <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="14" fill="{CARD}" fill-opacity="0.94" stroke="{CARD_EDGE}"/>
-  <text x="{x + 16}" y="{y + 26}" class="cardtitle">out / ref, live</text>
+  <text x="{x + 16}" y="{y + 26}" class="cardtitle">out / ref, % of peak</text>
   <text x="{x + 16}" y="{y + 46}" class="small">bench twin replay · M1 knocked {KNOCK_MRAD:g} mrad · single-mode fiber</text>
   {status_pills(x + w - 14, y + 11)}
   {grid}
@@ -503,12 +503,14 @@ def bench():
     <animate attributeName="stroke-dashoffset" values="47;0" dur="0.45s" repeatCount="indefinite"/>
   </polyline>
   <polygon points="{cone0}" fill="{LASER}" fill-opacity="0.75" filter="url(#glow)">{anim("points", CONE_VALS)}</polygon>'''
-    # reference arm: the beamsplitter's reflected share, straight down to the reference photodiode
+    # reference arm: the beamsplitter's reflected share, up to the reference photodiode
+    # on the fiber side of the laser row, as on the bench (a rect, not a line: a filtered
+    # vertical line has an empty bounding box and doesn't render)
     ref = f'''
-  <line x1="{X_BS}" y1="{Y_LOW}" x2="{X_BS}" y2="{Y_LOW + 40}" stroke="{LASER}" stroke-width="1.8" opacity="0.8" filter="url(#glow)"/>
-  <rect x="{X_BS - 9}" y="{Y_LOW + 40}" width="18" height="12" rx="2.5" fill="#1b2442" stroke="{METAL_EDGE}"/>
-  <rect x="{X_BS - 4}" y="{Y_LOW + 40}" width="8" height="3" fill="#94a3b8"/>
-  <circle cx="{X_BS}" cy="{Y_LOW + 42}" r="6" fill="{LASER}" opacity="0.6" filter="url(#haze)"/>'''
+  <rect x="{X_BS - 0.9}" y="{Y_LOW - 40}" width="1.8" height="40" fill="{LASER}" opacity="0.8" filter="url(#glow)"/>
+  <rect x="{X_BS - 9}" y="{Y_LOW - 52}" width="18" height="12" rx="2.5" fill="#1b2442" stroke="{METAL_EDGE}"/>
+  <rect x="{X_BS - 4}" y="{Y_LOW - 43}" width="8" height="3" fill="#94a3b8"/>
+  <circle cx="{X_BS}" cy="{Y_LOW - 42}" r="6" fill="{LASER}" opacity="0.6" filter="url(#haze)"/>'''
     laser = f'''
   <rect x="{X_LASER0}" y="{Y_LOW - 13}" width="{X_LASER1 - X_LASER0}" height="26" rx="6" fill="url(#metal)" stroke="{METAL_EDGE}"/>
   <rect x="{X_LASER0 + 8}" y="{Y_LOW - 7}" width="30" height="14" rx="3" fill="#0a0f22" stroke="#2c3966"/>
@@ -517,7 +519,7 @@ def bench():
   <rect x="{X_AP - 2}" y="{Y_LOW - 13}" width="4" height="9" rx="1" fill="#3c4c7c"/><rect x="{X_AP - 2}" y="{Y_LOW + 4}" width="4" height="9" rx="1" fill="#3c4c7c"/>
   {"".join(f'<rect x="{x - 2}" y="{Y_LOW - 14}" width="4" height="28" rx="1.5" fill="{POLARIZER}" fill-opacity="0.85"/>' for x in X_POL)}
   <rect x="{X_BS - 9}" y="{Y_LOW - 9}" width="18" height="18" rx="2" fill="{LENS}" fill-opacity="0.18" stroke="{LENS}" stroke-opacity="0.8"/>
-  <line x1="{X_BS - 9}" y1="{Y_LOW - 9}" x2="{X_BS + 9}" y2="{Y_LOW + 9}" stroke="{LENS}" stroke-opacity="0.9"/>'''
+  <line x1="{X_BS - 9}" y1="{Y_LOW + 9}" x2="{X_BS + 9}" y2="{Y_LOW - 9}" stroke="{LENS}" stroke-opacity="0.9"/>'''
     top = f'''
   {"".join(f'<rect x="{X_IRIS - 2.5}" y="{y0}" width="5" height="22" rx="1.5" fill="#3c4c7c"/>' for y0 in (Y_TOP - 28, Y_TOP + 6))}
   <path d="M{X_LENS} {Y_TOP - 22} Q{X_LENS + 9} {Y_TOP} {X_LENS} {Y_TOP + 22} Q{X_LENS - 9} {Y_TOP} {X_LENS} {Y_TOP - 22}Z" fill="{LENS}" fill-opacity="0.22" stroke="{LENS}" stroke-width="1.4"/>
@@ -537,7 +539,7 @@ def bench():
     m2 = mount(X_M, Y_TOP, M2_DEG, "M2", "front")
     labels = f'''
   <text x="{(X_LASER0 + X_LASER1) / 2}" y="{Y_LOW + 32}" text-anchor="middle" class="label">635 nm laser</text>
-  <text x="{X_BS}" y="{Y_LOW + 68}" text-anchor="middle" class="small">ref PD</text>
+  <text x="{X_BS - 15}" y="{Y_LOW - 42}" text-anchor="end" class="small">ref PD</text>
   <text x="{X_M + 16}" y="{Y_LOW - 16}" class="mname">M1</text>
   <text x="{X_M + 16}" y="{Y_TOP + 30}" class="mname">M2</text>
   <text x="{X_M - 64}" y="{Y_TOP - 62}" text-anchor="middle" class="small">2× NEMA 8</text>
@@ -546,12 +548,13 @@ def bench():
     spins = spin_icon(X_M + 46, Y_LOW + 8, "m1") + spin_icon(X_M - 46, Y_TOP - 8, "m2")
     # dimension lines: the two distances that set how M1 and M2 share the work
     xd, yd = X_M - 30, Y_TOP - 46
+    yd0, yd1 = Y_TOP + 40, Y_LOW - 70             # clear of M2 above and the ref PD below
     dims = f'''
   <g stroke="{MUTED}" stroke-opacity="0.45" stroke-width="1" fill="none">
-    <path d="M{xd - 4} {Y_TOP + 40} H{xd + 4} M{xd} {Y_TOP + 40} V{Y_LOW - 40} M{xd - 4} {Y_LOW - 40} H{xd + 4}" stroke-dasharray="0"/>
+    <path d="M{xd - 4} {yd0} H{xd + 4} M{xd} {yd0} V{yd1} M{xd - 4} {yd1} H{xd + 4}" stroke-dasharray="0"/>
     <path d="M{X_M + 30} {yd - 4} V{yd + 4} M{X_M + 30} {yd} H{X_LENS} M{X_LENS} {yd - 4} V{yd + 4}"/>
   </g>
-  <text transform="translate({xd - 8} {(Y_TOP + Y_LOW) / 2}) rotate(-90)" text-anchor="middle" class="tick">150 mm</text>
+  <text transform="translate({xd - 8} {(yd0 + yd1) / 2}) rotate(-90)" text-anchor="middle" class="tick">150 mm</text>
   <text x="{(X_M + 30 + X_LENS) / 2}" y="{yd - 8}" text-anchor="middle" class="tick">310 mm to the lens</text>
   <text x="{X_IRIS}" y="{Y_TOP + 44}" text-anchor="middle" class="small">iris</text>'''
     return ref + laser + top + beam + m1 + m2 + spins + labels + dims
@@ -562,7 +565,7 @@ BG_DEFS, BG_BODY = background(W, H)
 
 svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-labelledby="t d">
   <title id="t">ROS-Optics-Bench: a self-aligning laser-to-fiber bench</title>
-  <desc id="d">A 635 nm laser beam runs through polarizers and a beamsplitter, folds off two motorized mirrors and is focused into a single-mode fiber. M1 gets knocked, the beam misses the fiber and the coupling drops to zero; the motors search with M2, find the light and walk both mirrors back until the coupling is back at its peak. A fiber-face inset shows the focused spot wandering around the core during the search, and a chart shows the output-to-reference photodiode ratio from the bench twin simulator.</desc>
+  <desc id="d">A 635 nm laser beam runs through polarizers and a beamsplitter, folds off two motorized mirrors and is focused into a single-mode fiber. M1 gets knocked, the focused spot slides off the fiber's core and the coupling drops to almost nothing; the motors search with M2, find the light and walk both mirrors back until the coupling is back at its peak. A fiber-face inset shows the spot stepping outward in a square spiral beside the core until it finds it, and a chart shows the output-to-reference photodiode ratio, as a share of its peak, from the bench twin simulator.</desc>
   <style>
     text {{ font-family: {FONT}; }}
     .eyebrow {{ font-size: 13.5px; letter-spacing: 2.6px; font-weight: 700; fill: {LENS}; }}

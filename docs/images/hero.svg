@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="600" viewBox="0 0 1280 600" role="img" aria-labelledby="t d">
   <title id="t">ROS-Optics-Bench: a self-aligning laser-to-fiber bench</title>
-  <desc id="d">A 635 nm laser beam runs through polarizers and a beamsplitter, folds off two motorized mirrors and is focused into a single-mode fiber. M1 gets knocked, the beam misses the fiber and the coupling drops to zero; the motors search with M2, find the light and walk both mirrors back until the coupling is back at its peak. A fiber-face inset shows the focused spot wandering around the core during the search, and a chart shows the output-to-reference photodiode ratio from the bench twin simulator.</desc>
+  <desc id="d">A 635 nm laser beam runs through polarizers and a beamsplitter, folds off two motorized mirrors and is focused into a single-mode fiber. M1 gets knocked, the focused spot slides off the fiber's core and the coupling drops to almost nothing; the motors search with M2, find the light and walk both mirrors back until the coupling is back at its peak. A fiber-face inset shows the spot stepping outward in a square spiral beside the core until it finds it, and a chart shows the output-to-reference photodiode ratio, as a share of its peak, from the bench twin simulator.</desc>
   <style>
     text { font-family: ui-sans-serif, -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
     .eyebrow { font-size: 13.5px; letter-spacing: 2.6px; font-weight: 700; fill: #7dd3fc; }
@@ -108,10 +108,10 @@
 
   <!-- the bench, seen from above -->
   
-  <line x1="778" y1="438" x2="778" y2="478" stroke="#ff3b2f" stroke-width="1.8" opacity="0.8" filter="url(#glow)"/>
-  <rect x="769" y="478" width="18" height="12" rx="2.5" fill="#1b2442" stroke="#3c4c7c"/>
-  <rect x="774" y="478" width="8" height="3" fill="#94a3b8"/>
-  <circle cx="778" cy="480" r="6" fill="#ff3b2f" opacity="0.6" filter="url(#haze)"/>
+  <rect x="777.1" y="398" width="1.8" height="40" fill="#ff3b2f" opacity="0.8" filter="url(#glow)"/>
+  <rect x="769" y="386" width="18" height="12" rx="2.5" fill="#1b2442" stroke="#3c4c7c"/>
+  <rect x="774" y="395" width="8" height="3" fill="#94a3b8"/>
+  <circle cx="778" cy="396" r="6" fill="#ff3b2f" opacity="0.6" filter="url(#haze)"/>
   <rect x="650" y="425" width="62" height="26" rx="6" fill="url(#metal)" stroke="#3c4c7c"/>
   <rect x="658" y="431" width="30" height="14" rx="3" fill="#0a0f22" stroke="#2c3966"/>
   <circle cx="664" cy="438" r="2.4" fill="#34d399"><animate attributeName="opacity" values="1;0.4;1" dur="1.6s" repeatCount="indefinite"/></circle>
@@ -119,7 +119,7 @@
   <rect x="722" y="425" width="4" height="9" rx="1" fill="#3c4c7c"/><rect x="722" y="442" width="4" height="9" rx="1" fill="#3c4c7c"/>
   <rect x="738" y="424" width="4" height="28" rx="1.5" fill="#c4b5fd" fill-opacity="0.85"/><rect x="749" y="424" width="4" height="28" rx="1.5" fill="#c4b5fd" fill-opacity="0.85"/>
   <rect x="769" y="429" width="18" height="18" rx="2" fill="#7dd3fc" fill-opacity="0.18" stroke="#7dd3fc" stroke-opacity="0.8"/>
-  <line x1="769" y1="429" x2="787" y2="447" stroke="#7dd3fc" stroke-opacity="0.9"/>
+  <line x1="769" y1="447" x2="787" y2="429" stroke="#7dd3fc" stroke-opacity="0.9"/>
   <rect x="1007.5" y="168" width="5" height="22" rx="1.5" fill="#3c4c7c"/><rect x="1007.5" y="202" width="5" height="22" rx="1.5" fill="#3c4c7c"/>
   <path d="M1066 174 Q1075 196 1066 218 Q1057 196 1066 174Z" fill="#7dd3fc" fill-opacity="0.22" stroke="#7dd3fc" stroke-width="1.4"/>
   <rect x="1052" y="224" width="28" height="7" rx="2" fill="#151d38" stroke="#3c4c7c"/>
@@ -217,17 +217,17 @@
     </g>
   </g>
   <text x="681.0" y="470" text-anchor="middle" class="label">635 nm laser</text>
-  <text x="778" y="506" text-anchor="middle" class="small">ref PD</text>
+  <text x="763" y="396" text-anchor="end" class="small">ref PD</text>
   <text x="822" y="422" class="mname">M1</text>
   <text x="822" y="226" class="mname">M2</text>
   <text x="742" y="134" text-anchor="middle" class="small">2× NEMA 8</text>
   <text x="1066" y="248" text-anchor="middle" class="small">f 8 mm</text>
   <text x="1226" y="302" text-anchor="middle" class="small">out PD</text>
   <g stroke="#8b93b0" stroke-opacity="0.45" stroke-width="1" fill="none">
-    <path d="M772 236 H780 M776 236 V398 M772 398 H780" stroke-dasharray="0"/>
+    <path d="M772 236 H780 M776 236 V368 M772 368 H780" stroke-dasharray="0"/>
     <path d="M836 146 V154 M836 150 H1066 M1066 146 V154"/>
   </g>
-  <text transform="translate(768 317.0) rotate(-90)" text-anchor="middle" class="tick">150 mm</text>
+  <text transform="translate(768 302.0) rotate(-90)" text-anchor="middle" class="tick">150 mm</text>
   <text x="951.0" y="142" text-anchor="middle" class="tick">310 mm to the lens</text>
   <text x="1010" y="240" text-anchor="middle" class="small">iris</text>
   
@@ -273,7 +273,7 @@
   <text x="1158" y="176" text-anchor="middle" class="small">125 µm cladding</text>
   
   <rect x="884" y="304" width="366" height="252" rx="14" fill="#0e1631" fill-opacity="0.94" stroke="#2c3b6e"/>
-  <text x="900" y="330" class="cardtitle">out / ref, live</text>
+  <text x="900" y="330" class="cardtitle">out / ref, % of peak</text>
   <text x="900" y="350" class="small">bench twin replay · M1 knocked 1.5 mrad · single-mode fiber</text>
   
   <g opacity="0"><animate attributeName="opacity" values="0;1;0;0" keyTimes="0.0000;0.0000;0.1336;1.0000" calcMode="discrete" dur="11.97s" repeatCount="indefinite"/>
