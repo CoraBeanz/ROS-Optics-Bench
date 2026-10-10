@@ -69,7 +69,7 @@ The full CAD model is one STEP file exported from Onshape with its subassembly t
 ## Optical path
 
 <p align="center">
-  <img src="docs/images/beam_path.svg" width="100%" alt="Top view of the optical path: laser, 2 mm aperture, crossed polarizers and beamsplitter along the bottom, with the reference photodiode on the beamsplitter's side port; M1 turns the beam up to M2, 150 mm away, which sends it along the top through two irises to the f = 8 mm asphere on its stage and into the FC bulkhead, and the fiber loops to the output photodiode. A strip along the bottom gives the distances along the beam.">
+  <img src="docs/images/beam_path.svg" width="100%" alt="Top view of the optical path: laser, 2 mm aperture, crossed polarizers and beamsplitter along the bottom, with the reference photodiode on the beamsplitter's side port; M1 turns the beam up to M2, 150 mm away, which sends it along the top through two irises to the f = 8 mm asphere on its stage and into the FC bulkhead, and the fiber loops to the output photodiode. A strip along the bottom gives the design distances along the beam.">
 </p>
 
 The beam folds in a Z. M1 and M2 sit 150 mm apart, and M2 is 310 mm from the lens, so tilting the two mirrors together can set both where the beam crosses the lens and the angle it arrives at, and through them where the focused spot lands on the fiber face and the angle it enters at. One microstep tilts a mirror by about 4.6 µrad. One turn of M2's X adjuster moves the spot about 230 µm across the fiber face, and one turn of its Y adjuster about 165 µm, because at a 45° fold a vertical tilt bends the beam by √2 times the tilt instead of twice it.
@@ -79,7 +79,7 @@ The 2 mm aperture does mode matching. The laser's 7 x 3 mm beam is much bigger t
 ## Auto-align
 
 <p align="center">
-  <img src="docs/images/align.svg" width="100%" alt="Coupling over M1X and M2X computed by the bench twin: a long, thin diagonal valley. After a knock of M1, the steer-and-walk path follows the valley to the peak, while one motor at a time zig-zags and stalls on its wall. Three steps beside it: find the light with a square spiral on M2, steer with M2 alone, walk with M1 and an opposite M2 move. A results strip compares the two methods over 100 simulated knocks.">
+  <img src="docs/images/align.svg" width="100%" alt="Coupling over M1X and M2X computed by the bench twin: a long, thin, bright ridge running diagonally. After M1 is knocked 1.2 mrad, a square spiral on M2 finds the light on the ridge, then the steer-and-walk path follows the ridge to 99% of the best, while one motor at a time stalls part-way along it at 83%. Three steps beside it: find the light with a square spiral on M2, steer with M2 alone, walk with M1 and an opposite M2 move. A results strip compares the two methods over 100 simulated knocks.">
 </p>
 
 With a single-mode fiber the coupling depends on where the spot lands on the core (set by the beam's angle at the lens) and on the angle it comes in at (set by the beam's offset at the lens). The first is about 25 times more sensitive, and both mirrors change both, so in motor coordinates the peak is a ridge 23 times longer than it is wide, running diagonally across M1 and M2. Turning one knob at a time crawls along it. Auto-align, in the [test panel](#bench-test-panel) and as a [ROS 2 action](#ros-2-on-the-jetson), uses the two moves people use by hand instead:
@@ -87,7 +87,7 @@ With a single-mode fiber the coupling depends on where the spot lands on the cor
 - **Find.** If the output photodiode sees nothing, M2 steps the spot outward in a square spiral, up to **Search (turns)** either way, until the out/ref ratio clears 2% of its aligned value.
 - **Steer.** M2 alone moves the spot across the core: the narrow direction, 25 microsteps to the 1/e point on M2X.
 - **Walk.** M1 plus a matched, opposite M2 move keeps the spot where it is and changes only the angle: the wide direction, about 580 microsteps of M1.
-- **Repeat** walk and steer on both planes until a sweep gains less than 0.3%. Every point is approached from the same side, so the play in the hex couplings always sits the same way.
+- **Repeat** walk and steer on both planes until a sweep gains less than 0.3%. Each line search approaches its points from the same side, so the play in the hex couplings always sits the same way.
 
 The first run on a fiber also measures the walk directions on the real bench, since they depend on motor directions and lever arms. In 100 simulated knocks of 0.3 to 3 mrad, steer and walk brought all 100 back above 99.9% of the best coupling, with a median of 19 s and a worst case of 66 s. One motor at a time got 59 back to 90%. Everything here comes from the [bench twin](#bench-twin-simulator); Auto-align hasn't run on the hardware yet.
 
@@ -121,7 +121,7 @@ Both boards are KiCad 10 projects generated from Python, all through-hole, with 
   <img src="docs/images/system.svg" width="100%" alt="Block diagram of the code. The ESP32 firmware drives the four motor drivers, the laser and the ADS1115, and talks plain text over USB serial. bench_link connects either the real ESP32 or the bench twin simulator to two front ends, the PySide6 test panel and the ROS 2 packages on the Jetson, which both run the same Aligner. The camera feeds the beam_spot node. A band at the bottom shows the CAD, PCB and parts-list files.">
 </p>
 
-The ESP32 keeps the real-time work. The test panel and ROS 2 both drive it over one plain-text serial protocol, and the simulator answers the same commands, so either front end can run without the hardware.
+Where each piece lives, and how far it has been run:
 
 | Module | What it does | Run so far |
 | --- | --- | --- |
@@ -205,7 +205,7 @@ What it says so far, for the single-mode fiber:
 - **The peak is narrow and diagonal.** Moving M2X alone, coupling falls to 1/e within 25 microsteps (1.5 full steps). Moving M1 and M2 together the opposite way ("walking"), it stays up for about 580 microsteps. So in motor coordinates the peak is a long, thin ridge, 23 times longer than it is wide, running diagonally across M1 and M2. Adjusting one motor at a time stalls part-way along it.
 - **Recovery.** In 100 simulated knocks of 0.3 to 3 mrad on a random mirror, steer and walk got all 100 back above 99.9% of the best coupling, with a median of 19 s and a worst case of 66 s (at 60 RPM and 600 RPM/s). One motor at a time got 59 of 100 back to 90%, and its worst case ended at 41%. Most of the time goes into finding the light again. Knocks of M1 above about 5 mrad can defeat the search even though M2 could still put the spot back on the core: the beam then crosses the lens about 1.5 mm off axis and enters the fiber too steeply, so M2 alone brings back under 3% of the peak and the spiral never sees light (7 of the 48 M1 knocks in a run of 100 knocks of 3 to 6 mrad). A larger **Search (turns)** doesn't help these.
 - **The 2 mm aperture is close to ideal for coupling efficiency.** With the f = 8 mm lens, 83% of the light that gets through it can be coupled. The best combination tried reaches 86% (a 2.5 mm aperture with f = 11 mm), and 2 mm with f = 9 mm gets 85%. Without the aperture only 25% couples, because the 7 x 3 mm beam is much bigger than the fiber mode seen at the lens (1.5 mm). The aperture passes only 30% of the beam, so the fiber gets about a quarter of the laser's power either way; what it changes is the out/ref ratio at the peak, 0.67 instead of 0.20, since the reference photodiode sits after it.
-- **The play in the hex couplings matters.** One degree of play is about 9 microsteps, a third of the single-mode peak's width. The routine therefore approaches every point from the same side.
+- **The play in the hex couplings matters.** One degree of play is about 9 microsteps, a third of the single-mode peak's width. Each line search in the routine therefore approaches its points from one side.
 
 The numbers rest on estimates to replace with bench measurements, all set in `tools/bench_twin/bench.py` and `optics.py`:
 
@@ -272,7 +272,7 @@ electronics/
 firmware/optics_bench/     Arduino IDE sketch for the ESP32
 ├── optics_bench.ino       setup() and loop()
 ├── config.h               pin map, bus addresses, motor limits
-└── src/                   motion (TMC2209s, stepping, soft limits), sensing (ADS1115), laser, comms (serial protocol)
+└── src/                   motion (drivers, soft limits), sensing (ADS1115), laser, comms (protocol)
 host/ros2_ws/              ROS 2 Humble workspace for the Jetson: driver, camera, interfaces, bringup
 tools/
 ├── test_gui.py            the bench test panel

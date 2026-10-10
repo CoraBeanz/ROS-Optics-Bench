@@ -5,7 +5,7 @@ Each script writes one SVG next to this folder, in docs/images:
     py -3 docs/images/src/hero.py         the README banner (needs numpy: it runs the bench twin)
     py -3 docs/images/src/beam_path.py    the optical path
     py -3 docs/images/src/system.py       how the code and hardware talk
-    py -3 docs/images/src/align.py        how Auto-align gets the light back
+    py -3 docs/images/src/align.py        how Auto-align gets the light back (needs numpy too)
 """
 from pathlib import Path
 
