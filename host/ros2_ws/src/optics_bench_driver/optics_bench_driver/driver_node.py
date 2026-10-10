@@ -68,6 +68,7 @@ class BenchDriver(Node):
         self.ctl = None
         self._connect_lock = threading.Lock()
         self._align_abort = None
+        self._move_aborts = set()            # one per MoveTo goal in progress; /stop sets them
         self._last_status = None
         self._last_ratio = 0.0
 
@@ -191,8 +192,8 @@ class BenchDriver(Node):
             ctl = self._need()
             line = req.line.strip()
             cmd = line.split()[0].upper() if line else ""
-            if cmd in ("STOP", "HALT") and self._align_abort:
-                self._align_abort.set()
+            if cmd in ("STOP", "HALT"):
+                self._stop_goals()
             if ctl.aligning and cmd not in READ_ONLY_WHILE_ALIGNING:
                 raise self.Busy("aligning: only STATUS, INFO, PING, STOP and HALT until it finishes")
             timeout = 1.0 if cmd == "PD" and line.upper().split()[1:2] == ["DARK"] else 0.0
@@ -213,9 +214,16 @@ class BenchDriver(Node):
             res.success, res.message = False, str(e)
         return res
 
-    def on_stop(self, req, res):
+    def _stop_goals(self):
+        """End the running Align and MoveTo goals (they abort; the motors are
+        stopped by the STOP that comes with this)."""
         if self._align_abort:
             self._align_abort.set()
+        for ev in list(self._move_aborts):
+            ev.set()
+
+    def on_stop(self, req, res):
+        self._stop_goals()
         try:
             res.message = self._need().request("STOP ALL")
             res.success = True
@@ -252,6 +260,7 @@ class BenchDriver(Node):
         g = handle.request
         axes = list(g.axes) or list(AXES)
         abort = threading.Event()
+        self._move_aborts.add(abort)
         result = MoveTo.Result()
 
         def progress(pos):
@@ -272,14 +281,16 @@ class BenchDriver(Node):
             if self._last_status:
                 result.position = list(self._last_status.position)
             self._end(handle, abort.is_set() and handle.is_cancel_requested)
+        finally:
+            self._move_aborts.discard(abort)
         return result
 
     def accept_align(self, goal):
         if goal.fiber and goal.fiber not in self.FIBERS:
             self.get_logger().warn(f"align: fiber must be one of {', '.join(self.FIBERS)}")
             return GoalResponse.REJECT
-        if self.ctl is None or self.ctl.aligning:
-            return GoalResponse.REJECT
+        if self.ctl is None or self.ctl.aligning or self._move_aborts:
+            return GoalResponse.REJECT       # one goal at a time owns the motors
         return GoalResponse.ACCEPT
 
     def run_align(self, handle):

@@ -1,6 +1,8 @@
 """Links to the bench controller: the ESP32 over USB serial, or a simulator.
 
-A link has send(line), close(), and a queue `rx` of received lines. The
+A link has send(line), close(), and a queue `rx` of received lines. Callables
+in `listeners` also get every line as it arrives, on the link's own thread
+(the GUI feeds the aligner this way, without waiting for its UI timer). The
 firmware's protocol is documented in firmware/optics_bench/src/comms/protocol.h.
 Used by tools/test_gui.py and the ROS 2 driver in host/ros2_ws.
 
@@ -11,6 +13,7 @@ tools/bench_twin); each imports what it needs when it is opened.
 from __future__ import annotations
 
 import dataclasses
+import math
 import queue
 import random
 import threading
@@ -33,9 +36,17 @@ def ints(csv):
     return [int(float(x)) for x in csv.split(",")]
 
 
+def _emit(link, line):
+    """Queue a received line and hand it to the link's listeners."""
+    link.rx.put(line)
+    for fn in list(link.listeners):
+        fn(line)
+
+
 class SerialLink:
     def __init__(self, port, baud=115200):
         self.rx = queue.Queue()
+        self.listeners = []
         import serial
 
         self.ser = serial.Serial()
@@ -56,9 +67,12 @@ class SerialLink:
         buf = b""
         while self.alive:
             try:
-                chunk = self.ser.read(256)
+                # Wait (up to the 0.1 s timeout) for the first byte only, then take
+                # whatever has arrived: read(256) would hold every reply until 256
+                # bytes or the timeout.
+                chunk = self.ser.read(self.ser.in_waiting or 1)
             except Exception as e:  # unplugged
-                self.rx.put(f"LINK_ERROR {e}")
+                _emit(self, f"LINK_ERROR {e}")
                 self.alive = False
                 return
             if not chunk:
@@ -66,7 +80,7 @@ class SerialLink:
             buf += chunk
             while b"\n" in buf:
                 raw, buf = buf.split(b"\n", 1)
-                self.rx.put(raw.decode(errors="replace").strip())
+                _emit(self, raw.decode(errors="replace").strip())
 
     def send(self, line):
         with self.lock:
@@ -119,6 +133,8 @@ class SimLink:
         self.dark_laser = False
         self.fixed_fsr = None
         self.rx = queue.Queue()
+        self.listeners = []
+        self._events = []                    # lines a command causes after its reply (EVT DONE on STOP)
         self.lock = threading.Lock()
         n = len(AXES)
         self.pos = [0.0] * n
@@ -136,8 +152,8 @@ class SimLink:
         self.limited = [False] * n
         self.laser = False
         self.alive = True
-        self.rx.put("BOOT optics_bench sim")
-        self.rx.put("READY")
+        _emit(self, "BOOT optics_bench sim")
+        _emit(self, "READY")
         threading.Thread(target=self._tick, daemon=True).start()
 
     def _set_fiber(self, fiber, seed=None):
@@ -155,6 +171,7 @@ class SimLink:
             time.sleep(0.02)
             now = time.monotonic()
             dt, last = now - last, now
+            out = []                         # sent after the lock is released
             with self.lock:
                 for i in range(len(AXES)):
                     if self.jog_deadline[i] and now > self.jog_deadline[i]:
@@ -174,16 +191,18 @@ class SimLink:
                         at = self.limited[i] and (p <= self.lo[i] or p >= self.hi[i])
                         self.limited[i] = False
                         self.jog_deadline[i] = None
-                        self.rx.put(f"EVT DONE {AXES[i]} POS={p}" + (" LIMIT" if at else ""))
+                        out.append(f"EVT DONE {AXES[i]} POS={p}" + (" LIMIT" if at else ""))
                 if self.dark_done_at and now >= self.dark_done_at:
                     self.dark_done_at = None
                     self.dark = self._pd_raw()
                     self.have_dark = True
                     self.laser = self.dark_laser
-                    self.rx.put(f"OK PD DARK REF={self.dark[0]:.6f} OUT={self.dark[1]:.6f}")
+                    out.append(f"OK PD DARK REF={self.dark[0]:.6f} OUT={self.dark[1]:.6f}")
                 if self.stream_hz and now >= self.next_stream and not self.dark_done_at:
                     self.next_stream = now + 1 / self.stream_hz
-                    self.rx.put(self._pd_line())
+                    out.append(self._pd_line())
+            for line in out:
+                _emit(self, line)
 
     def _sync_twin(self):
         self.twin.set_motor([p + z for p, z in zip(self.pos, self.zero)])
@@ -261,12 +280,26 @@ class SimLink:
 
     def send(self, line):
         with self.lock:
+            self._events = []
             try:
                 reply = self._handle(line.split())
             except (ValueError, IndexError) as e:
                 reply = f"ERR {e}"
-        if reply:
-            self.rx.put(reply)
+            events, self._events = self._events, []
+        for l in ([reply] if reply else []) + events:
+            _emit(self, l)
+
+    def _halt(self, i):
+        """Stop axis i where it is; the firmware reports where a stopped move ended."""
+        was_moving = self.pos[i] != self.tgt[i]
+        self.tgt[i] = round(self.pos[i])
+        self.pos[i] = self.tgt[i]
+        self.jog_deadline[i] = None
+        if was_moving:
+            p = self.tgt[i]
+            at = self.limited[i] and (p <= self.lo[i] or p >= self.hi[i])
+            self.limited[i] = False
+            self._events.append(f"EVT DONE {AXES[i]} POS={p}" + (" LIMIT" if at else ""))
 
     def _handle(self, t):
         if not t:
@@ -286,8 +319,8 @@ class SimLink:
                     f"MIN={csv(lambda i: self.lo[i])} MAX={csv(lambda i: self.hi[i])} "
                     f"RPM={csv(lambda i: self.rpm[i])} ACCEL={csv(lambda i: self.acc[i])} "
                     f"MA={csv(lambda i: self.ma[i])} MAX_RPM=120.0 MAX_MA=420 "
-                    f"ABS_LIMIT={8 * self.USTEPS_PER_REV} TRUSTED=1 ADC=1 PD_RF=47000,47000 PD_RESP=0.40 "
-                    f"slots=sim")
+                    f"ABS_LIMIT={8 * self.USTEPS_PER_REV} TRUSTED=1 TRUST=1,1,1,1 ADC=1 PD_RF=47000,47000 "
+                    f"PD_RESP=0.40 slots=sim")
         if c == "PD":
             return self._pd(a)
         if c == "LASER":
@@ -310,9 +343,7 @@ class SimLink:
             return None
         if c in ("STOP", "HALT"):
             for i in self._axis(a[0] or "ALL", True):
-                self.tgt[i] = round(self.pos[i])
-                self.pos[i] = self.tgt[i]
-                self.jog_deadline[i] = None
+                self._halt(i)
             self._sync_twin()
             return f"OK {c}"
         if c == "ZERO":             # renames the position; nothing moves
@@ -336,6 +367,8 @@ class SimLink:
             return f"OK LIMITS MIN={lo} MAX={hi}"
         if c in ("SPEED", "ACCEL", "CURRENT"):
             v = float(a[1])
+            if not math.isfinite(v) or v <= 0:      # the firmware refuses nan and inf too
+                return "ERR CURRENT needs mA" if c == "CURRENT" else f"ERR {c} needs a positive number"
             for i in self._axis(a[0], True):
                 if c == "SPEED":
                     self.rpm[i] = min(v, 120.0)
@@ -349,7 +382,8 @@ class SimLink:
                 self.en[i] = self.held[i] = c == "ENABLE"
                 self.still_since[i] = time.monotonic()
                 if c == "DISABLE":
-                    self.tgt[i] = round(self.pos[i])
+                    self._halt(i)
+            self._sync_twin()
             return f"OK {c}"
         if c == "DRV":
             i = self._axis(a[0])[0]

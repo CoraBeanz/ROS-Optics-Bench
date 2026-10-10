@@ -53,7 +53,10 @@ String driverReport(int i);                   // idle only: DRV_STATUS summary
 String slotMapReport();                       // which address answered in which slot
 
 void savePositionsNow();
-bool positionsTrusted();                      // false if power was lost mid-move
-void markPositionsTrusted();                  // after ZERO ALL: the operator re-referenced every axis
+// Trust is per axis and kept in flash: an axis whose move was cut by a power
+// loss, or that moved while its driver lost power, stays untrusted across
+// reboots until ZERO or SETPOS of that axis (ZERO ALL does all four).
+bool positionsTrusted();                      // false if any axis is untrusted
+bool positionTrusted(int i);
 
 }  // namespace motion

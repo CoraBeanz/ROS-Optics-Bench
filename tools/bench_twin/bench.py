@@ -184,12 +184,12 @@ class Bench:
         if self.mech.drift_urad_rt_s and dt > 0:
             self.offset += self.rng.normal(0, self.mech.drift_urad_rt_s * 1e-6 * math.sqrt(dt), 4)
 
-    def knock(self, mirror=None, mrad=None):
-        """Tilt a mirror mount by `mrad` in a random direction, as if bumped.
-        Returns (mirror, x tilt, y tilt) in mrad."""
+    def knock(self, mirror=None, mrad=None, angle=None):
+        """Tilt a mirror mount by `mrad` in direction `angle` (radians; random
+        if not given), as if bumped. Returns (mirror, x tilt, y tilt) in mrad."""
         mirror = int(self.rng.integers(1, 3)) if mirror is None else int(mirror)
         mrad = float(self.rng.uniform(0.3, 3.0)) if mrad is None else float(mrad)
-        a = self.rng.uniform(0, 2 * math.pi)
+        a = self.rng.uniform(0, 2 * math.pi) if angle is None else float(angle)
         dx, dy = mrad * math.cos(a), mrad * math.sin(a)
         self.offset[2 * (mirror - 1):2 * mirror] += np.array([dx, dy]) * 1e-3
         return mirror, dx, dy

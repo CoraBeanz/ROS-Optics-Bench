@@ -11,7 +11,7 @@
 
 #include <Arduino.h>
 
-#define FW_VERSION "0.1.0"
+#define FW_VERSION "0.2.0"
 
 // ── Host serial (USB) ────────────────────────────────────────────────────────
 #define SERIAL_BAUD 115200
@@ -37,6 +37,15 @@
 // UART wiring is being debugged; positions will then be wrong by the
 // microstep ratio.
 #define ALLOW_MOVES_WITHOUT_UART false
+
+// A driver's logic runs from its motor supply, so a driver that loses 12 V
+// stops answering. Between moves the firmware reads one driver's GSTAT every
+// DRV_CHECK_PERIOD_MS, once every axis has been still for DRV_CHECK_IDLE_MS
+// (at least POS_SAVE_DELAY_MS), so STATUS DRV= drops to 0 and a WARN is sent.
+// Each read stalls the loop for ~5 ms (~19 ms if the driver is gone), so it
+// never runs while a motor moves.
+#define DRV_CHECK_IDLE_MS   2000
+#define DRV_CHECK_PERIOD_MS 250
 
 // ── Motor axes ──────────────────────────────────────────────────────────────
 // Two motors per mirror: X and Y adjusters on M1 and M2. Which adjuster is
@@ -87,6 +96,8 @@ constexpr AxisPins AXIS_PINS[NUM_AXES] = {
 #define I2C_SDA_PIN     22
 #define I2C_SCL_PIN     20
 #define I2C_CLOCK_HZ    400000
+#define I2C_TIMEOUT_MS  3         // per transaction; a stuck bus stalls the step loop at most this long per try
+#define ADS_MAX_FAILS   10        // consecutive failed samples before the ADS1115 counts as gone
 #define ADS1115_ADDR    0x48      // ADDR pin to GND
 #define PD_REF_CHANNEL  0
 #define PD_OUT_CHANNEL  1

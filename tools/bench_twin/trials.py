@@ -49,7 +49,10 @@ def run_trials(n=50, fiber="sm630", naive=False, seed=0, knock_mrad=(0.3, 3.0), 
         bench.clear_knocks()
         bench.jump_to_peak()
         aligner.forget_direction()
-        mirror, dx, dy = bench.knock(mrad=rng.uniform(*knock_mrad))
+        # The knock comes from this loop's own generator, not the bench's (which
+        # also draws photodiode noise), so two methods compared on the same
+        # seed meet the same knocks.
+        mirror, dx, dy = bench.knock(int(rng.integers(1, 3)), rng.uniform(*knock_mrad), rng.uniform(0, 2 * np.pi))
         res = aligner.recover()
         c = float(bench.coupling() / bench.best_coupling())
         out.append(Trial(mirror, float(np.hypot(dx, dy)), c >= 0.9, c, res.seconds, res.moves, res.reads))

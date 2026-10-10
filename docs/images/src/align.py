@@ -88,9 +88,9 @@ CUT_STEER = coupling(0 * CUT, CUT)
 CUT_WALK = coupling(CUT, SLOPE * CUT)
 
 # The 100-knock trials, from: py -3 tools/twin.py trials -n 100 --compare (seed 0)
-#   walk        100/100   time median 19.1 s / worst 66.2 s   coupling median 100.0% / worst 99.9%
-#   one motor    59/100                                        coupling worst 41.2%
-TRIALS = dict(n=100, sw_ok=100, sw_median_s=19, sw_worst_s=66, nv_ok=59, nv_worst=41)
+#   walk        100/100   time median 19.1 s / worst 65.8 s   coupling median 100.0% / worst 99.9%
+#   one motor    68/100                                        coupling worst 35.4%
+TRIALS = dict(n=100, sw_ok=100, sw_median_s=19, sw_worst_s=66, nv_ok=68, nv_worst=35)
 
 W, H = 1280, 800
 SEARCH_C, SW_C, NV_C = WARN, LENS, POLARIZER

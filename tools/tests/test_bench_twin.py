@@ -21,8 +21,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), os.p
 
 import numpy as np  # noqa: E402
 
-from bench_twin import Aligner, Bench, Mechanics, OpticalModel, Optics, make_plan  # noqa: E402
-from bench_twin.trials import run_trials  # noqa: E402
+from bench_twin import (Aligner, Bench, Mechanics, NoReference, OpticalModel, Optics, Reading,  # noqa: E402
+                        make_plan)
+from bench_twin.trials import make_bench, run_trials  # noqa: E402
 
 LAM = 635e-6
 
@@ -122,7 +123,6 @@ class AlignTest(unittest.TestCase):
         self.assertGreater(np.mean([r.coupling for r in walk]), np.mean([r.coupling for r in naive]))
 
     def test_calibration_finds_the_walk_direction(self):
-        from bench_twin.trials import make_bench
         bench = make_bench("sm630", seed=6)
         bench.jump_to_peak()
         al = Aligner(bench, make_plan(Bench(Optics())))
@@ -132,6 +132,52 @@ class AlignTest(unittest.TestCase):
         for plane in (0, 1):
             true = -k[plane] / k[2 + plane]
             self.assertAlmostEqual(al.plan.slope[plane], true, delta=0.03 * abs(true))
+
+
+    def test_recovers_whichever_way_the_walk_slopes(self):
+        # These benches failed every recovery when walk line searches with a
+        # negative slope arrived with M2 moving -, flipping the adjuster play
+        for seed in (6, 18, 21):
+            rs = run_trials(10, "sm630", seed=seed)
+            self.assertEqual(sum(r.ok for r in rs), len(rs), f"seed {seed}")
+
+    def test_both_methods_meet_the_same_knocks(self):
+        walk = run_trials(5, "sm630", seed=4)
+        naive = run_trials(5, "sm630", naive=True, seed=4)
+        self.assertEqual([(r.mirror, r.knock_mrad) for r in walk], [(r.mirror, r.knock_mrad) for r in naive])
+
+    def test_an_output_offset_is_not_taken_for_light(self):
+        # 13 mV on the output photodiode with the beam far off the fiber: the
+        # search finds "light" everywhere, but there is no peak to calibrate on
+        bench = make_bench("smf28", seed=3)
+        bench.jump_to_peak()
+        bench.knock(2, 4.0)
+        res = Aligner(_Offset(bench, 0.013), make_plan(Bench(Optics(fiber="smf28")))).first_align()
+        self.assertTrue(res.found)
+        self.assertFalse(res.ok)
+        self.assertIn("no peak", res.note)
+
+    def test_no_reference_light_stops_the_run(self):
+        bench = make_bench("sm630", seed=1)
+        bench.jump_to_peak()
+        bench.laser = False
+        with self.assertRaises(NoReference):
+            Aligner(bench, make_plan(Bench(Optics()))).first_align()
+
+
+class _Offset:
+    """A bench whose output photodiode reads `volts` high after dark subtraction."""
+
+    def __init__(self, bench, volts):
+        self.bench, self.volts = bench, volts
+
+    def __getattr__(self, name):
+        return getattr(self.bench, name)
+
+    def read(self, seconds=0.02):
+        r = self.bench.read(seconds)
+        out = r.out_v + self.volts
+        return Reading(r.ref_v, out, out / r.ref_v if r.ratio is not None else None)
 
 
 class ProtocolTest(unittest.TestCase):
@@ -167,6 +213,30 @@ class ProtocolTest(unittest.TestCase):
             self.assertGreater(float(link.twin.coupling() / link.twin.best_coupling()), 0.95)
         finally:
             alive = False
+            link.close()
+
+
+    def test_stop_ends_every_move_with_done(self):
+        # The GUI and ROS wait for EVT DONE; a STOP that skipped it left them
+        # thinking the axis was still moving
+        from bench_link import SimLink
+        link = SimLink(fiber="mm50", seed=1)
+        try:
+            link.send("SPEED ALL 30")
+            link.send("MOVE M1X 2000")
+            link.send("MOVE M2Y -2000")
+            time.sleep(0.3)
+            link.send("STOP")
+            lines = []
+            deadline = time.time() + 2
+            while time.time() < deadline:
+                try:
+                    lines.append(link.rx.get(timeout=0.1))
+                except queue.Empty:
+                    break
+            done = [l for l in lines if l.startswith("EVT DONE")]
+            self.assertEqual(sorted(l.split()[2] for l in done), ["M1X", "M2Y"])
+        finally:
             link.close()
 
 

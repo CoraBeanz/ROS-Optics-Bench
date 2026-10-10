@@ -21,7 +21,7 @@ whether it is already on hand, **TBD** = part not chosen yet.
 | E18 | Photodiode board PCB | electronics/pcb/pd_amp, 34 x 25 mm 2-layer (5 pcs) | 1 | 2 | JLCPCB / PCBWay | To buy | 2 | Build two; replaces the photodiode perfboards (E15). Adds a 100 Ohm output resistor per board |
 | E6 | Motor supply | 12 V 2 A DC | 1 | 8 | Amazon | Check | 1 | Skip if using a bench supply. Drivers only answer UART with 12 V on |
 | E7 | Laser | Quarton VLM-635-32 LPT 635 nm module (Amazon B07QCTMMVT) | 1 |  | Amazon | Have | 1 | TTL high = on from GPIO 21. Measured beam about 7 x 3 mm |
-| E8 | ADC | Adafruit ADS1115 16-bit I2C breakout (product 1085) | 1 | 15 | Adafruit | Check | 2 | Address 0x48 (ADDR to GND). Plugs into control board socket A2 (or the Feather STEMMA QT port when hand-wired). Adafruit ADS1X15 library |
+| E8 | ADC | Adafruit ADS1115 16-bit I2C breakout (product 1085) | 1 | 15 | Adafruit | Check | 2 | Address 0x48 (ADDR to GND). Plugs into control board socket A2 (or the Feather STEMMA QT port when hand-wired). Read with the ESP32 core's Wire library |
 | E9 | Photodiode | BPW34 Si PIN (5-pack) | 1 | 7 | Amazon / DigiKey | Check | 2 | One on each photodiode board: reference (ADS1115 A0) and fiber output (A1) |
 | E10 | TIA op-amp | MCP6002 dual op-amp, DIP-8 | 2 | 0.5 | DigiKey | Check | 2 | One per photodiode board; half B unused, wired as a grounded follower |
 | E11 | Hookup | Wire, headers, Dupont/JST connectors | 1 |  | Stock | Have | 1 |  |
